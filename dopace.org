@@ -1,0 +1,495 @@
+* Basic-Config
+** BaseConfig
+#+BEGIN_SRC emacs-lisp
+  (tool-bar-mode -1)
+  (display-time-mode 1)
+
+  (setq org-startup-indented t)
+
+  (global-auto-revert-mode 1)
+
+  (scroll-bar-mode -1)
+
+  (add-hook 'emacs-lisp-mode-hook 'show-paren-mode)    
+
+  (prefer-coding-system 'utf-8)
+  (setq default-buffer-file-coding-system 'utf-8)
+
+  (setq-default indent-tabs-mode nil)
+  (setq-default tab-width 2)
+  (setq indent-line-function 'insert-tab)
+
+  (setq make-backup-files nil)		; xxx.xx~
+  (setq auto-save-default nil)		; #xxx.xx#
+
+  (require 'recentf)
+  (recentf-mode 1)
+
+(global-set-key (kbd "C-c a")  'org-agenda) 
+(global-set-key (kbd "C-c c")  'org-capture) 
+#+END_SRC
+
+* OS-setup
+** os-init
+#+BEGIN_SRC emacs-lisp
+(defun windows-setup ()
+    (setq
+    font-height 115
+    font-size 14
+    org-plantuml-jar-path (expand-file-name "d:/Program/emacs-26.2/plantuml.jar")
+    default-directory "D:/Program/emacs-26.2/work"
+    os-shell-root "c:/Users/Administrator/.babun/cygwin/bin/"
+    config-base-dir "E:/nutstore/2017pc")
+    (message "windows-setup done!")
+    )
+
+(defun mac-os-setup ()
+    (setq
+    font-height 150
+    font-size 14
+    org-plantuml-jar-path (expand-file-name "~/local/lib/plantuml.jar")
+    default-directory "~/work"
+    os-shell-root "/bin/"
+    config-base-dir "~/nutstore/2017pc")
+    (message "mac-os-setup done!")
+    )
+
+(defun linux-setup ()
+    (setq
+    font-height 120
+    font-size 13
+    org-plantuml-jar-path (expand-file-name "~/local/lib/plantuml.jar")
+    default-directory "~/work"
+    os-shell-root "/usr/bin/"
+    config-base-dir "~/lab/")
+    (message "linux-setup done!")
+    )
+
+(cl-case system-type
+    (windows-nt  (windows-setup ))
+    (darwin      (mac-os-setup  ))
+    (gnu/linux   (linux-setup   ))
+)
+(setq
+    org-agenda-dir  (concat config-base-dir "/org/")
+    )
+
+(use-package exec-path-from-shell
+  :ensure f
+  :if (memq window-system '(mac ns))
+  :config
+  (exec-path-from-shell-initialize))
+#+END_SRC
+** Font-config
+#+BEGIN_SRC emacs-lisp
+(set-face-attribute 'default nil
+  :family "Consolas" :height font-height)
+
+;; Setting Chinese Font
+(dolist (charset '(kana han symbol cjk-misc bopomofo))
+  (set-fontset-font (frame-parameter nil 'font)
+            charset
+            (font-spec :family "Microsoft Yahei" :size font-size)))
+#+END_SRC
+* Utils
+** loop-alpha
+#+BEGIN_SRC emacs-lisp
+(setq alpha-list '((85 55) (100 100)))
+(defun dopace-loop-alpha ()
+  (interactive)
+  (let ((h (car alpha-list)))
+    ((lambda (a ab)
+       (set-frame-parameter (selected-frame) 'alpha (list a ab))
+       (add-to-list 'default-frame-alist (cons 'alpha (list a ab)))
+       ) (car h) (car (cdr h)))
+    (setq alpha-list (cdr (append alpha-list (list h))))
+    ))
+
+(evil-leader/set-key
+    "tt" 'dopace-loop-alpha
+    "tf" 'toggle-frame-fullscreen
+)
+#+END_SRC
+
+** open-config-file
+#+BEGIN_SRC emacs-lisp
+(defun dopace-utils/open-init-config-file ()
+  "Show FAQ and launch swiper session."
+  (interactive)
+  (find-file-read-only
+   (expand-file-name "init.el" (concat config-base-dir "/config.org")))
+  (swiper " user-config"))
+
+(evil-leader/set-key 
+ "fi" 'dopace-utils/open-init-config-file
+)
+#+END_SRC
+* Package-Manager
+** ELPA source 
+Use-package allows for isolation of package configuration, while
+maintaining tidiness and performance.
+
+#+BEGIN_SRC emacs-lisp
+  (require 'package)
+  (if (memq window-system '(mac ns))
+      (progn
+        (add-to-list 'package-archives '("melpa" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/") t)
+        (add-to-list 'package-archives '("org" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/org/") t)
+        (add-to-list 'package-archives '("gnu" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/") t))
+        ;; (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+        ;; (add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/") t))
+    (setq package-archives nil))
+
+  (package-initialize)
+  (unless (package-installed-p 'use-package)
+    (package-refresh-contents)
+    (package-install 'use-package))
+
+  (require 'use-package)
+  (setq use-package-always-ensure t)
+
+  ;; Always demand if daemon-mode
+  ; (setq use-package-always-demand (daemonp))
+
+#+END_SRC    
+
+** Packages
+*** modeline
+
+#+BEGIN_SRC emacs-lisp
+(use-package doom-modeline
+      :ensure t
+      :hook (after-init . doom-modeline-mode))
+
+(setq doom-modeline-bar-width 4) 
+#+END_SRC    
+
+*** evil-mode
+    
+#+BEGIN_SRC emacs-lisp
+(use-package evil
+      :ensure t
+      :hook (after-init . evil-mode))
+#+END_SRC    
+*** which-key
+#+BEGIN_SRC emacs-lisp
+(use-package which-key
+    :ensure t
+    :config
+    (which-key-mode +1)
+)
+#+END_SRC
+*** doom-theme
+#+BEGIN_SRC emacs-lisp
+(use-package doom-themes
+:disabled t
+:config
+(load-theme 'doom-one 1)
+)
+#+END_SRC
+*** ivy
+#+BEGIN_SRC emacs-lisp
+(use-package ivy
+:config 
+(ivy-mode 1)
+(setq ivy-use-virtual-buffers t)
+(setq enable-recursive-minibuffers t)
+(global-set-key "\C-s" 'swiper)
+  (evil-leader/set-key
+    "M-x" 'counsel-M-x
+    "ff"  'counsel-find-file
+  )
+)
+#+END_SRC
+*** evil-leader
+#+BEGIN_SRC emacs-lisp
+(use-package evil-leader
+:ensure t
+:config 
+(global-evil-leader-mode)
+(evil-leader/set-leader "<SPC>")
+)
+#+END_SRC
+*** eyebrowse
+#+BEGIN_SRC emacs-lisp
+(use-package eyebrowse
+  :init
+  (setq eyebrowse-new-workspace t
+        eyebrowse-wrap-around t)
+  :config
+  (eyebrowse-mode)
+  (evil-leader/set-key
+    "lp" 'eyebrowse-prev-window-config
+    "ln" 'eyebrowse-next-window-config
+    "ld" 'eyebrowse-close-window-config
+    "lr" 'eyebrowse-rename-window-config
+    "l." 'eyebrowse-switch-to-window-config
+    "l0" 'eyebrowse-switch-to-window-config-0
+    "l1" 'eyebrowse-switch-to-window-config-1
+    "l2" 'eyebrowse-switch-to-window-config-2
+    "l3" 'eyebrowse-switch-to-window-config-3
+    "l4" 'eyebrowse-switch-to-window-config-4
+    "l5" 'eyebrowse-switch-to-window-config-5
+    "l6" 'eyebrowse-switch-to-window-config-6
+    "l7" 'eyebrowse-switch-to-window-config-7
+    "l8" 'eyebrowse-switch-to-window-config-8
+    "l9" 'eyebrowse-switch-to-window-config-9
+    "lc" 'eyebrowse-create-window-config
+    "ll" 'eyebrowse-last-window-config
+  )
+)
+#+END_SRC
+#+BEGIN_SRC emacs-lisp
+;;; 存入 `~/.emacs.d/ivy-views'文件中
+(defun peng-save-ivy-views ()
+  (interactive)
+  (with-temp-file "~/.emacs.d/ivy-views"
+    (prin1 ivy-views (current-buffer))
+    (message "save ivy-views to ~/.emacs.d/ivy-views")))
+;;; 从文件中加载
+(defun peng-load-ivy-views ()
+  (interactive)
+  (setq ivy-views
+        (with-temp-buffer
+          (insert-file-contents "~/.emacs.d/ivy-views")
+          (read (current-buffer))))
+  (message "load ivy-views"))
+
+;;; 清除所有的views
+(defun peng-clear-ivy-views ()
+  (interactive)
+  (setq ivy-views nil))
+
+;;; 退出自动保存
+(add-hook 'kill-emacs-hook #'(lambda ()
+                               (peng-save-ivy-views)))
+
+;;; 启动自动加载
+(add-hook 'emacs-startup-hook #'(lambda ()
+                               (peng-load-ivy-views)))
+
+#+END_SRC
+
+*** projectile
+#+BEGIN_SRC emacs-lisp
+(use-package counsel-projectile
+    :config
+    (counsel-projectile-mode)
+    (evil-leader/set-key
+        "p" 'projectile-command-map
+    )
+)
+#+END_SRC
+*** winum
+#+BEGIN_SRC emacs-lisp
+(use-package winum
+:config
+(winum-mode)
+  (evil-leader/set-key
+    "0" 'winum-select-window-0-or-10
+    "1" 'winum-select-window-1
+    "2" 'winum-select-window-2
+    "3" 'winum-select-window-3
+    "4" 'winum-select-window-4
+    "5" 'winum-select-window-5
+    "6" 'winum-select-window-6
+  )
+)
+#+END_SRC
+
+*** helm-ag
+#+BEGIN_SRC emacs-lisp
+(use-package helm-ag
+:config
+(setq 
+    helm-follow-mode-persistent t)
+)
+#+END_SRC
+*** ace-jump
+#+BEGIN_SRC emacs-lisp
+(use-package ace-jump-mode
+:config
+(evil-leader/set-key
+"<SPC>" 'ace-jump-mode 
+; "<SPC>" 'ace-jump-char-mode 
+)
+)
+#+END_SRC
+*** ensime
+#+BEGIN_SRC emacs-lisp
+(use-package ensime
+  ; :pin melpa ;; pining to melpa uses cutting-edge snapshot version
+  :commands ensime ensime-mode
+  :init
+  :config
+  (require 'ensime-expand-region)
+  (setq ensime-startup-notification nil
+	ensime-startup-snapshot-notification nil))
+#+END_SRC
+* KeyBindings
+** Inctroductions
+*** global key maps 
+~(global-set-key (kbd "C-c b") 'bbdb)~
+*** specfic mode keymap 
+~(define-key text-mode-map (kbd "'") 'maybe-open-apostrophe)~
+~M-x describe-mode~ to show all modes in current buffer 
+#+begin_src 
+(defun mp-add-python-keys ()
+  (local-set-key (kbd "C-c q") 'shell))
+
+(add-hook 'python-mode-hook 'mp-add-python-keys)
+#+end_src
+*** binding after load
+~(eval-after-load 'text-mode '(define-key text-mode-map (kbd "'") 'maybe-open-apostrophe))~
+*** remove keybindings
+~(global-unset-key (kbd "C-c b")~
+** layouts
+** windows
+#+BEGIN_SRC emacs-lisp
+(defun split-window-below-and-focus ()
+  "Split the window vertically and focus the new window."
+  (interactive)
+  (split-window-below)
+  (windmove-down)
+  (when (and (boundp 'golden-ratio-mode)
+             (symbol-value golden-ratio-mode))
+    (golden-ratio)))
+
+(defun split-window-right-and-focus ()
+  "Split the window horizontally and focus the new window."
+  (interactive)
+  (split-window-right)
+  (windmove-right)
+  (when (and (boundp 'golden-ratio-mode)
+             (symbol-value golden-ratio-mode))
+    (golden-ratio)))    
+#+END_SRC
+#+BEGIN_SRC emacs-lisp
+  (evil-leader/set-key
+    "w=" 'balance-windows
+    "wl" 'evil-window-right
+    "wh" 'evil-window-left
+    "wj" 'evil-window-up
+    "wk" 'evil-window-down
+    "wL" 'evil-window-move-far-right
+    "wH" 'evil-window-move-far-left
+    "wJ" 'evil-window-move-very-top
+    "wK" 'evil-window-move-very-bottom
+    "w-" 'split-window-below-and-focus
+    "w/" 'split-window-right-and-focus
+    "wv" 'split-window-below
+    "ws" 'split-window-right
+    "ws" 'other-window
+    "wd" 'delete-window
+    "wc" 'centered-buffer-mode
+    "wb" 'switch-to-minibuffer-window
+    )
+#+END_SRC
+** buffer
+#+BEGIN_SRC emacs-lisp
+(evil-leader/set-key
+"bb" 'ivy-switch-buffer
+"bh" 'home
+"bn" 'next-buffer
+"bp" 'previous-buffer
+"bm" 'kill-other-buffer
+"bd" 'kill-this-buffer
+;"b." 'buffer-transient-state
+)
+#+END_SRC
+** project
+** +file
+#+BEGIN_SRC emacs-lisp
+(evil-leader/set-key
+"fb" 'counsel-bookmark
+"fc" 'copy-file
+"fh" 'hexl-find-file
+"fs" 'save-buffer
+)
+(evil-leader/set-key
+"ma" 'bookmark-set
+"mj" 'bookmark-jump
+"md" 'bookmark-delete
+"ml" 'bookmark-bmenu-list
+)
+#+END_SRC
+** toggle
+#+BEGIN_SRC emacs-lisp
+(evil-leader/set-key
+    "tl" 'linum-mode
+)
+#+END_SRC
+
+* Test
+#+BEGIN_SRC emacs-lisp
+(getenv "PATH")
+(type-of (file-expand-wildcards "*.*"))
+(type-of org-agenda-files )
+(type-of (quote ("~/git/org"
+        "~/git/org/client1"
+        "~/git/client2")))
+
+(global-set-key (kbd "<f12>") 'org-agenda)
+#+END_SRC
+* Todos
+- SPC-TAB spacemacs/alternate-buffer
+#+begin_src tmp
+(defun spacemacs/alternate-buffer (&optional window)
+  "Switch back and forth between current and last buffer in the
+current window."
+  (interactive)
+  (let ((current-buffer (window-buffer window))
+        (buffer-predicate
+         (frame-parameter (window-frame window) 'buffer-predicate)))
+    ;; switch to first buffer previously shown in this window that matches
+    ;; frame-parameter `buffer-predicate'
+    (switch-to-buffer
+     (or (cl-find-if (lambda (buffer)
+                       (and (not (eq buffer current-buffer))
+                            (or (null buffer-predicate)
+                                (funcall buffer-predicate buffer))))
+                     (mapcar #'car (window-prev-buffers window)))
+         ;; `other-buffer' honors `buffer-predicate' so no need to filter
+         (other-buffer current-buffer t)))))
+#+end_src
+- SPC-f-e-R dotspacemacs/sync-configuration-layers
+#+begin_src tmp
+(defun dotspacemacs/sync-configuration-layers (&optional arg)
+  "Synchronize declared layers in dotfile with spacemacs.
+
+Called with `C-u' skips `dotspacemacs/user-config'.
+Called with `C-u C-u' skips `dotspacemacs/user-config' _and_ preleminary tests."
+  (interactive "P")
+  (when (file-exists-p dotspacemacs-filepath)
+    (with-current-buffer (find-file-noselect dotspacemacs-filepath)
+      (let ((dotspacemacs-loading-progress-bar nil))
+        (setq spacemacs-loading-string "")
+        (save-buffer)
+        (let ((tests-ok (or (equal arg '(16)) (dotspacemacs/test-dotfile t))))
+          (if tests-ok
+              (progn
+                (load-file buffer-file-name)
+                (dotspacemacs|call-func dotspacemacs/init
+                                        "Calling dotfile init...")
+                (dotspacemacs|call-func dotspacemacs/user-init
+                                        "Calling dotfile user init...")
+                (setq dotspacemacs-editing-style
+                      (dotspacemacs//read-editing-style-config
+                       dotspacemacs-editing-style))
+                (configuration-layer/sync)
+                (if (member arg '((4) (16)))
+                    (message (concat "Done (`dotspacemacs/user-config' "
+                                     "function has been skipped)."))
+                  (dotspacemacs|call-func dotspacemacs/user-config
+                                          "Calling dotfile user config...")
+                  (run-hooks 'spacemacs-post-user-config-hook)
+                  (message "Done.")))
+            (switch-to-buffer-other-window dotspacemacs-test-results-buffer)
+            (spacemacs-buffer/warning "Some tests failed, check `%s' buffer"
+                                      dotspacemacs-test-results-buffer))))))
+  (when (configuration-layer/package-usedp 'spaceline)
+    (spacemacs//set-powerline-for-startup-buffers)))
+#+end_src
+- org bable source defualt-hidden
+#+begin_src tmp
+#+end_src
