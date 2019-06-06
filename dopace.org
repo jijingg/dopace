@@ -1,48 +1,45 @@
+#+TITLE: Dopace(a emacs configuration)
+#+AUTHOR: jijing
+#+EMAIL: goco.v@163.com
 #+LATEX_HEADER: \usepackage{xeCJK}
 #+LATEX_HEADER: \setCJKmainfont{SimSun}
 
 * Basic-Config
-** ELPA source 
+** ELPA source
 Use-package allows for isolation of package configuration, while
 maintaining tidiness and performance.
-
 #+BEGIN_SRC emacs-lisp
-    (setq package-archives
-     '(
-        ("melpa"     .  "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa")
-        ("gnu"       .  "http://mirrors.tuna.tsinghua.edu.cn/elpa/gnu")
-        ("org"       .  "http://mirrors.tuna.tsinghua.edu.cn/elpa/org"))
-      )
+(when (>= emacs-major-version 24)
+  (require 'package)
+  (package-initialize)
+  (setq package-archives '(
+      ("melpa"  .  "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")
+      ("gnu"    .  "http://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/")
+      ("org"    .  "http://mirrors.tuna.tsinghua.edu.cn/elpa/org/")))
+)
 
-    (package-initialize)
+(defun packages-require (&rest packs)
+  "Install and load a package. If the package is not available
+   installs it automaticaly."
+  (mapc  (lambda (package)
+           (unless (package-installed-p package)
+                   (package-refresh-contents)
+                   (package-install package)
+                   ))
+         packs
+         ))
 
-    (defun packages-require (&rest packs)
-      "Install and load a package. If the package is not available
-       installs it automaticaly."
-      (mapc  (lambda (package)
-               (unless (package-installed-p package)
-                       (package-install package)
-                       ;;#'package-require
-                       ))
-             packs
-             ))
+;(packages-require
+; use-package
+; evil-leader
+; )
+(unless (package-installed-p 'use-package)
+        (package-install 'use-package))
+;默认对所有的包先检查后下载
+(setq use-package-always-ensure t)
+;ensure nil 表示不下载，用当前elpa路径下的包 , 对于built-in 或者本地第三方
+;package 加上 :ensure nil 或者 :load-path就行了
 
-    (packages-require
-     'use-package
-     'evil-leader
-     )  
-
-; (require 'package)
-; (if (memq window-system '(mac ns w32))
-;     (progn
-;       (add-to-list 'package-archives '("melpa" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/") t)
-;       (add-to-list 'package-archives '("org" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/org/") t)
-;       (add-to-list 'package-archives '("gnu" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/") t))
-;       ;; (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-;       ;; (add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/") t))
-;   (setq package-archives nil))
-;
-; (package-initialize)
 ; (unless (package-installed-p 'use-package)
 ;   (package-refresh-contents)
 ;   (package-install 'use-package))
@@ -50,22 +47,20 @@ maintaining tidiness and performance.
 ; (require 'use-package)
 ; (setq use-package-always-ensure t)
 ;
-; ;; Always demand if daemon-mode
-; ; (setq use-package-always-demand (daemonp))
 
 (use-package exec-path-from-shell
-  :ensure f
+  :ensure t
   :if (memq window-system '(mac ns))
   :config
   (exec-path-from-shell-initialize))
-#+END_SRC    
+#+END_SRC
 
+Enable evil-leader First
 #+BEGIN_SRC emacs-lisp
 (use-package evil-leader
-:ensure t
-:config 
-(global-evil-leader-mode)
-(evil-leader/set-leader "<SPC>")
+    :config
+    (global-evil-leader-mode)
+    (evil-leader/set-leader "<SPC>")
 )
 #+END_SRC
 
@@ -74,13 +69,14 @@ maintaining tidiness and performance.
 (setq custom-file "~/.emacs.d/custom.el")
 (tool-bar-mode -1)
 (display-time-mode 1)
+(menu-bar-mode -1)
 
 ;;自动加载文件改动
 (global-auto-revert-mode 1)
 
 (scroll-bar-mode -1)
 
-(add-hook 'emacs-lisp-mode-hook 'show-paren-mode)    
+(add-hook 'emacs-lisp-mode-hook 'show-paren-mode)
 
 (prefer-coding-system 'utf-8)
 (setq default-buffer-file-coding-system 'utf-8)
@@ -94,8 +90,8 @@ maintaining tidiness and performance.
 
 (require 'recentf)
 (recentf-mode 1)
-(global-set-key (kbd "C-c a")  'org-agenda) 
-(global-set-key (kbd "C-c c")  'org-capture) 
+(global-set-key (kbd "C-c a")  'org-agenda)
+(global-set-key (kbd "C-c c")  'org-capture)
 #+END_SRC
 
 * OS-setup
@@ -103,8 +99,8 @@ maintaining tidiness and performance.
 #+BEGIN_SRC emacs-lisp
 (defun windows-setup ()
     (setq
-    font-height 115
-    font-size 14
+    font-height 110
+    font-size 13
     org-plantuml-jar-path (expand-file-name "d:/Program/emacs-26.2/plantuml.jar")
     default-directory "D:/Program/emacs-26.2/work"
     os-shell-root "c:/Users/Administrator/.babun/cygwin/bin/"
@@ -114,7 +110,7 @@ maintaining tidiness and performance.
 
 (defun mac-os-setup ()
     (setq
-    font-height 150
+    font-height 160
     font-size 14
     org-plantuml-jar-path (expand-file-name "~/local/lib/plantuml.jar")
     default-directory "~/work"
@@ -144,6 +140,7 @@ maintaining tidiness and performance.
     )
 
 #+END_SRC
+
 ** Font-config
 #+BEGIN_SRC emacs-lisp
 (set-face-attribute 'default nil
@@ -155,6 +152,7 @@ maintaining tidiness and performance.
             charset
             (font-spec :family "Microsoft Yahei" :size font-size)))
 #+END_SRC
+
 * Utils
 ** loop-alpha
 #+BEGIN_SRC emacs-lisp
@@ -184,10 +182,11 @@ maintaining tidiness and performance.
    (expand-file-name "init.el" (concat config-base-dir "/config.org")))
   (swiper " user-config"))
 
-(evil-leader/set-key 
+(evil-leader/set-key
  "fi" 'dopace-utils/open-init-config-file
 )
 #+END_SRC
+
 ** Hide Source block as defualt Org-mode
 #+begin_src elisp
 (defun dopace-visibility-source-blocks ()
@@ -209,6 +208,7 @@ maintaining tidiness and performance.
 
 (add-hook 'org-mode-hook 'dopace-visibility-source-blocks)
 #+end_src
+
 * Package-Manager
 ** Packages
 *** modeline
@@ -216,18 +216,20 @@ maintaining tidiness and performance.
 #+BEGIN_SRC emacs-lisp
 (use-package doom-modeline
       :ensure t
-      :hook (after-init . doom-modeline-mode))
-
-(setq doom-modeline-bar-width 4) 
-#+END_SRC    
+      :hook (after-init . doom-modeline-mode)
+      :config
+      (setq doom-modeline-bar-width 4)
+      (setq doom-modeline-height 20)
+)
+#+END_SRC
 
 *** evil-mode
-    
 #+BEGIN_SRC emacs-lisp
 (use-package evil
       :ensure t
       :hook (after-init . evil-mode))
-#+END_SRC    
+#+END_SRC
+
 *** which-key
 #+BEGIN_SRC emacs-lisp
 (use-package which-key
@@ -236,6 +238,7 @@ maintaining tidiness and performance.
     (which-key-mode +1)
 )
 #+END_SRC
+with ivy 
 *** doom-theme
 #+BEGIN_SRC emacs-lisp
 (use-package doom-themes
@@ -244,10 +247,12 @@ maintaining tidiness and performance.
 (load-theme 'doom-one 1)
 )
 #+END_SRC
+defualt coding theme
 *** ivy
 #+BEGIN_SRC emacs-lisp
 (use-package ivy
-:config 
+:ensure t
+:config
 (ivy-mode 1)
 (setq ivy-use-virtual-buffers t)
 (setq enable-recursive-minibuffers t)
@@ -255,9 +260,20 @@ maintaining tidiness and performance.
   (evil-leader/set-key
     "M-x" 'counsel-M-x
     "ff"  'counsel-find-file
+    "fb"  'counsel-bookmark
+    "fr"  'counsel-recentf
+    "rl"  'ivy-resume
   )
 )
 #+END_SRC
+默认没有历史记录， M-x M-p 会调出历史记录
+*** smex
+#+BEGIN_SRC  emacs-lisp
+(use-package smex
+:ensure t
+)
+#+END_SRC
+for ivy history using 
 *** evil-leader
 *** eyebrowse
 #+BEGIN_SRC emacs-lisp
@@ -288,7 +304,7 @@ maintaining tidiness and performance.
   )
 )
 #+END_SRC
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC lisp-disabeld
 ;;; 存入 `~/.emacs.d/ivy-views'文件中
 (defun peng-save-ivy-views ()
   (interactive)
@@ -322,6 +338,7 @@ maintaining tidiness and performance.
 *** projectile
 #+BEGIN_SRC emacs-lisp
 (use-package counsel-projectile
+    :ensure t
     :config
     (counsel-projectile-mode)
     (evil-leader/set-key
@@ -329,6 +346,7 @@ maintaining tidiness and performance.
     )
 )
 #+END_SRC
+~M-x projectile-invalidate-cache~ to clear project cache
 *** winum
 #+BEGIN_SRC emacs-lisp
 (use-package winum
@@ -350,20 +368,25 @@ maintaining tidiness and performance.
 #+BEGIN_SRC emacs-lisp
 (use-package helm-ag
 :config
-(setq 
+(setq
     helm-follow-mode-persistent t)
+(evil-leader/set-key
+  "ag" 'helm-ag
+)
 )
 #+END_SRC
+
 *** ace-jump
 #+BEGIN_SRC emacs-lisp
 (use-package ace-jump-mode
 :config
 (evil-leader/set-key
-"<SPC>" 'ace-jump-mode 
-; "<SPC>" 'ace-jump-char-mode 
+"<SPC>" 'ace-jump-mode
+; "<SPC>" 'ace-jump-char-mode
 )
 )
 #+END_SRC
+
 *** ensime
 #+BEGIN_SRC emacs-lisp
 (use-package ensime
@@ -373,8 +396,9 @@ maintaining tidiness and performance.
   :config
   (require 'ensime-expand-region)
   (setq ensime-startup-notification nil
-	ensime-startup-snapshot-notification nil))
+  ensime-startup-snapshot-notification nil))
 #+END_SRC
+
 *** commentary
 #+begin_src emacs-lisp
 (use-package evil-commentary
@@ -385,27 +409,29 @@ maintaining tidiness and performance.
 
 * KeyBindings
 ** Inctroductions(Not config)
-*** global key maps 
+*** global key maps
 ~(global-set-key (kbd "C-c b") 'bbdb)~
-*** specfic mode keymap 
+*** specfic mode keymap
 ~(define-key text-mode-map (kbd "'") 'maybe-open-apostrophe)~
-~M-x describe-mode~ to show all modes in current buffer 
-#+begin_src 
+~M-x describe-mode~ to show all modes in current buffer
+#+begin_src
 (local-set-key (kbd "C-c q") (lambda () (interactive) (message "Hi Local Hook")))
 (defun localhooktest ()
   (local-set-key (kbd "C-c q") (lambda () (interactive) (message "Hi Local Hook"))))
 (add-hook 'org-mode-hook 'localhooktest)
 #+end_src
+
 *** binding after load
 ~(eval-after-load 'text-mode '(define-key text-mode-map (kbd "'") 'maybe-open-apostrophe))~
 *** remove keybindings
 ~(global-unset-key (kbd "C-c b")~
-*** prefix-key 
+*** prefix-key
 #+begin_example
 (define-prefix-command 'ctl-z-map)
 (global-set-key (kbd "C-z") 'ctl-z-map)
 (global-set-key (kbd "C-z C-c C-w b") 'find-file)
 #+end_example
+
 ** layouts
 ** windows
 #+BEGIN_SRC emacs-lisp
@@ -425,19 +451,20 @@ maintaining tidiness and performance.
   (windmove-right)
   (when (and (boundp 'golden-ratio-mode)
              (symbol-value golden-ratio-mode))
-    (golden-ratio)))    
+    (golden-ratio)))
 #+END_SRC
+
 #+BEGIN_SRC emacs-lisp
   (evil-leader/set-key
     "w=" 'balance-windows
     "wl" 'evil-window-right
     "wh" 'evil-window-left
-    "wj" 'evil-window-up
-    "wk" 'evil-window-down
+    "wk" 'evil-window-up
+    "wj" 'evil-window-down
     "wL" 'evil-window-move-far-right
     "wH" 'evil-window-move-far-left
-    "wJ" 'evil-window-move-very-top
-    "wK" 'evil-window-move-very-bottom
+    "wK" 'evil-window-move-very-top
+    "wJ" 'evil-window-move-very-bottom
     "w-" 'split-window-below-and-focus
     "w/" 'split-window-right-and-focus
     "wv" 'split-window-below
@@ -448,7 +475,9 @@ maintaining tidiness and performance.
     "wb" 'switch-to-minibuffer-window
     )
 #+END_SRC
+
 ** buffer
+*** Keybidings
 #+BEGIN_SRC emacs-lisp
 (evil-leader/set-key
 "bb" 'ivy-switch-buffer
@@ -460,11 +489,34 @@ maintaining tidiness and performance.
 ;"b." 'buffer-transient-state
 )
 #+END_SRC
-** project
+
+*** 快速切换上一个buffer，摘自spacemacs
+#+begin_src emacs-lisp
+(defun spacemacs/alternate-buffer (&optional window)
+  "Switch back and forth between current and last buffer in the
+current window."
+  (interactive)
+  (let ((current-buffer (window-buffer window))
+        (buffer-predicate
+         (frame-parameter (window-frame window) 'buffer-predicate)))
+    ;; switch to first buffer previously shown in this window that matches
+    ;; frame-parameter `buffer-predicate'
+    (switch-to-buffer
+     (or (cl-find-if (lambda (buffer)
+                       (and (not (eq buffer current-buffer))
+                            (or (null buffer-predicate)
+                                (funcall buffer-predicate buffer))))
+                     (mapcar #'car (window-prev-buffers window)))
+         ;; `other-buffer' honors `buffer-predicate' so no need to filter
+         (other-buffer current-buffer t)))))
+
+(evil-leader/set-key "<tab>" #'spacemacs/alternate-buffer )
+#+end_src
+
+** projec
 ** +file
 #+BEGIN_SRC emacs-lisp
 (evil-leader/set-key
-"fb" 'counsel-bookmark
 "fc" 'copy-file
 "fh" 'hexl-find-file
 "fs" 'save-buffer
@@ -476,69 +528,120 @@ maintaining tidiness and performance.
 "ml" 'bookmark-bmenu-list
 )
 #+END_SRC
+
 ** toggle
 #+BEGIN_SRC emacs-lisp
 (evil-leader/set-key
     "tl" 'linum-mode
+    "tp" 'org-toggle-inline-images
 )
 #+END_SRC
 
-
 * Org-mode
 ** setup
-#+BEGIN_SRC emacs-lisp 
-  (use-package org
-      ; :ensure org-plus-contrib
-      :mode ("\\.org\\'" . org-mode)
-      :bind
-      (("C-c l" . org-store-link)
-      ("C-c a" . org-agenda)
-      ("C-c b" . org-iswitchb)
-      ("C-c c" . org-capture))
-      :bind
-      (:map org-mode-map
-          ("M-n" . outline-next-visible-heading)
-          ("M-p" . outline-previous-visible-heading))
-      :custom
-      (org-src-window-setup 'current-window)
-      (org-return-follows-link t)
-      ;; (org-agenda-diary-file (concat org-agenda-dir "/diary.org")
-      (org-babel-load-languages
-      '((emacs-lisp . t)
-          (python . t)))
-      (org-use-speed-commands t)
-      (org-catch-invisible-edits 'show)
-      :custom-face
-      (variable-pitch ((t (:family "iA Writer Duospace" :height 0.9))))
-      (org-document-title ((t (:weight bold :height 1.3))))
-      ;; (org-done ((t (:strike-through t :weight bold))))
-      ;; (org-headline-done ((t (:strike-through t))))
-      ;; (org-level-1 ((t (:height 1.15))))
-      ;; (org-level-2 ((t (:height 1.1))))
-      ;; (org-level-3 ((t (:height 1.05))))
-      (org-image-actual-width (/ (display-pixel-width) 2))
-      ;; :custom
-      ;; (org-structure-template-alist '(("a" . "export ascii")
-      ;;                                 ("c" . "center")
-      ;;                                 ("C" . "comment")
-      ;;                                 ("e" . "example")
-      ;;                                 ("E" . "export")
-      ;;                                 ("h" . "export html")
-      ;;                                 ("l" . "export latex")
-      ;;                                 ("q" . "quote")
-      ;;                                 ("s" . "src")
-      ;;                                 ("v" . "verse")
-      ;;                                 ("el" . "src emacs-lisp")
-      ;;                                 ("d" . "definition")
-      ;;                                 ("t" . "theorem")))
-      :config
-      (setq org-startup-indented t)
-      (require 'org-habit)
-      (when (version<= "9.2" (org-version))
-      (require 'org-tempo))
-      )
+=M-x customize-group RET org-appearance RET=
+=M-x customize-group RET org-faces RET=
+~face~
+*face*
+/italic/
++shanchuxian+
+_xiahuaxian_
+E=mc^2
+
+#+BEGIN_SRC emacs-lisp
+(use-package org
+  :mode ("\\.org\\'" . org-mode)
+    :bind
+    (("C-c l" . org-store-link)
+    ("C-c a" . org-agenda)
+    ("C-c b" . org-iswitchb)
+    ("C-c c" . org-capture))
+    :bind
+    (:map org-mode-map
+    ("M-n" . outline-next-visible-heading)
+    ("M-p" . outline-previous-visible-heading))
+    :custom
+    (org-src-window-setup 'current-window)
+    (org-return-follows-link t)
+    (org-babel-load-languages
+    '((emacs-lisp . t)
+        (python . t)))
+    (org-use-speed-commands t)
+    (org-catch-invisible-edits 'show)
+    :custom-face
+    (org-default ((t (:inherit default :background "snow"))))  
+    (variable-pitch ((t (:family "iA Writer Duospace" :height 0.9))))
+    (org-document-title ((t (:weight bold :height 1.3 :slant italic))))
+    (org-meta-line ((t (:inherit font-lock-comment-face :foreground "chocolate3" :slant italic :height 0.94))))
+    (org-date ((t (:foreground "chocolate3" :underline t :slant italic :height 0.94)))) ;DATA
+    (org-document-info-keyword ((t (:inherit shadow :foreground "snow4" :slant italic :height 0.94))))
+    (org-document-info ((t (:foreground "midnight blue" :slant italic))))
+    ;; (org-done ((t (:strike-through t :weight bold))))
+    ;; (org-headline-done ((t (:strike-through t))))
+    (org-level-1 ((t (:foreground "blue"))))
+    (org-level-2 ((t (:foreground "SaddleBrown"))))
+    (org-level-3 ((t (:foreground "purple"))))
+    (org-block-begin-line ((t (:foreground "#a98" :background "#fff4ea" :slant italic :underline t))))
+    (org-block-end-line ((t (:foreground "#a98" :background "#fff4ea" :slant italic :underline t))))
+    (org-block ((t (:background "#fffef5"))))
+    (org-quote ((t (:background "#0ffef5"))))
+    (org-special-keyword ((t (:foreground "chocolate3" :slant italic :height 0.94)))) ;DEDLINE SCHEDUE
+    (org-image-actual-width (/ (display-pixel-width) 2))
+    ;; :custom
+    ;; (org-structure-template-alist '(("a" . "export ascii")
+    ;;                                 ("c" . "center")
+    ;;                                 ("C" . "comment")
+    ;;                                 ("e" . "example")
+    ;;                                 ("E" . "export")
+    ;;                                 ("h" . "export html")
+    ;;                                 ("l" . "export latex")
+    ;;                                 ("q" . "quote")
+    ;;                                 ("s" . "src")
+    ;;                                 ("v" . "verse")
+    ;;                                 ("el" . "src emacs-lisp")
+    ;;                                 ("d" . "definition")
+    ;;                                 ("t" . "theorem")))
+    :config
+    (setq system-time-locale "C")       ;set date english format
+    (setq org-startup-indented t)
+    (require 'org-habit)
+    (when (version<= "9.2" (org-version))
+    (require 'org-tempo))
+
+    (setq org-latex-pdf-process '("xelatex -interaction nonstopmode %f"
+                            "xelatex -interaction nonstopmode %f"))
+    (setq org-latex-default-packages-alist
+    (remove '("AUTO" "inputenc" t) org-latex-default-packages-alist))
+    )
 #+END_SRC
-** Org-GTD
+
+:PROPERTIES:
+:reveal_background: ./images/whale.jpg
+:reveal_background_size: 200px
+:reveal_background_repeat: repeat
+:END:
+
+#+BEGIN_SRC elisp
+(mode-line italic mode-line)
+;; First create new face which is a copy of hl-line-face
+(copy-face 'hl-line 'hl-line-agenda-face)
+
+;; Change what you want in this new face 
+(set-face-attribute 'hl-line-agenda-face nil
+                    :box '(:color "deep pink" :line-width 2))
+
+;; The function to use the new face
+(defun my-org-agenda-hl-line ()
+  (set (make-local-variable 'hl-line-face) ; This is how to make it local
+       'hl-line-agenda-face)
+    (hl-line-mode))
+
+;; Finally, the hook
+(add-hook 'org-agenda-mode-hook 'my-org-agenda-hl-line)
+
+#+END_SRC
+
+** Org-GTD     
 ** Org-Blog
 ** Org-export
 ** Exporting PDFs
@@ -559,11 +662,11 @@ xelatex比较新,对UTF的支持更傻瓜，但是对有些旧的宏可能不支
 而pdflatex对宏的支持更全面，排版个人觉得更为好看，只不过体积有点大
 
 I use export to LaTeX through ox-latex, using xelatex for a nicer export template.
-#+begin_src emacs-lisp 
+#+begin_src emacs-lisp
 (use-package ox-latex
   :disabled t
     :after org
-    :ensure f
+    :ensure nil
     :config
     :custom
     (org-latex-pdf-process
@@ -680,16 +783,21 @@ I use export to LaTeX through ox-latex, using xelatex for a nicer export templat
            ((?p "Export to PDF" jethro/org-multicol-to-pdf)))))
 #+end_src
 
-** Auctex
+** Org-formula-preview
+#+begin_src emacs-lisp
 
+#+end_src
+
+** Auctex
 #+begin_src emacs-lisp
 (use-package auctex
 :defer t
 :ensure t
-:config 
+:config
 (setq TeX-auto-save t)
 (setq TeX-parse-self t)
 )
+(executable-find "dvipng")
 #+end_src
 AUCTEX is an extensible package for writing and formatting TEX files in GNU Emacs. It supports many different TEX macro packages, including AMS-TEX, LATEX, Texinfo, ConTEXt, and docTEX (dtx files).
 可以用来预览org-mode中的latex公式（M-x org-toggle-latex-fragment)
@@ -699,7 +807,6 @@ org-compile-file: File "c:/Users/ADMINI~1/AppData/Local/Temp/orgtexIbqETP.dvi" w
 就是auctex没有安装导致的
 
 ** Automatic latex image toggling when cursor is on a fragment
-
 #+begin_src elisp
 (defvar org-latex-fragment-last nil
   "Holds last fragment/environment you were on.")
@@ -777,11 +884,21 @@ org-compile-file: File "c:/Users/ADMINI~1/AppData/Local/Temp/orgtexIbqETP.dvi" w
 
 
 (add-hook 'post-command-hook 'org-latex-fragment-toggle)
-   
+
 #+end_src
 
-
-* Test
+* Program-Language
+** Python
+** Scala
+** Lisp
+** Verilog
+** C
+* TODO Test
+DEADLINE: <2019-06-06 Thu> SCHEDULED: <2019-06-06 Thu>
+:LOGBOOK:
+CLOCK: [2019-06-06 Thu 20:43]--[2019-06-06 Thu 21:53] =>  1:10
+CLOCK: [2019-06-06 Thu 20:42]--[2019-06-06 Thu 20:42] =>  0:00
+:END:
 
 #+BEGIN_SRC elisp
 ;(require 'org-crypt)
@@ -794,30 +911,11 @@ org-compile-file: File "c:/Users/ADMINI~1/AppData/Local/Temp/orgtexIbqETP.dvi" w
 ;                              "xelatex -interaction nonstopmode %f"))
 #+END_SRC
 
-
-* Todos [0/8]
-- [ ] SPC-TAB spacemacs/alternate-buffer
-#+begin_src tmp
-(defun spacemacs/alternate-buffer (&optional window)
-  "Switch back and forth between current and last buffer in the
-current window."
-  (interactive)
-  (let ((current-buffer (window-buffer window))
-        (buffer-predicate
-         (frame-parameter (window-frame window) 'buffer-predicate)))
-    ;; switch to first buffer previously shown in this window that matches
-    ;; frame-parameter `buffer-predicate'
-    (switch-to-buffer
-     (or (cl-find-if (lambda (buffer)
-                       (and (not (eq buffer current-buffer))
-                            (or (null buffer-predicate)
-                                (funcall buffer-predicate buffer))))
-                     (mapcar #'car (window-prev-buffers window)))
-         ;; `other-buffer' honors `buffer-predicate' so no need to filter
-         (other-buffer current-buffer t)))))
-#+end_src
+* Todos [1/9]
+DEADLINE: <2019-06-06 Thu> SCHEDULED: <2019-06-06 Thu>
+- [X] SPC-TAB spacemacs/alternate-buffer
 - [ ] SPC-f-e-R dotspacemacs/sync-configuration-layers
-#+begin_src tmp
+#+begin_src
 (defun dotspacemacs/sync-configuration-layers (&optional arg)
   "Synchronize declared layers in dotfile with spacemacs.
 
@@ -855,8 +953,6 @@ Called with `C-u C-u' skips `dotspacemacs/user-config' _and_ preleminary tests."
     (spacemacs//set-powerline-for-startup-buffers)))
 #+end_src
 - [ ] org bable source defualt-hidden
-#+begin_src tmp
-#+end_src
 - [ ] org-indent-mode add org-mode-hooks - [ ] company
 - [ ] youdao-dictionary
 - [ ] smartparens
