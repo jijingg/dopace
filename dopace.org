@@ -1,8 +1,8 @@
 #+TITLE: Dopace(a emacs configuration)
 #+AUTHOR: jijing
 #+EMAIL: goco.v@163.com
-#+LATEX_HEADER: \usepackage{xeCJK}
-#+LATEX_HEADER: \setCJKmainfont{SimSun}
+#+LATEX_HEADER: \usepackage[UTF8]{ctex}
+#+STARTUP: indent
 
 * Basic-Config
 ** ELPA source
@@ -74,6 +74,9 @@ Enable evil-leader First
 ;;自动加载文件改动
 (global-auto-revert-mode 1)
 
+;;设置问答提示为 y-or-n,而不是yes-or-no
+(fset 'yes-or-no-p 'y-or-n-p)   
+
 (scroll-bar-mode -1)
 
 (add-hook 'emacs-lisp-mode-hook 'show-paren-mode)
@@ -96,13 +99,20 @@ Enable evil-leader First
 
 * OS-setup
 ** os-init
+
+很多时候我们需要跨平台的支持，比如可能个人电脑是mac，公司用的是windows,工作开发又在linux上。
+不可能每一个系统都配置一份dotfile. 因此我们将不同OS上不同的部分单独拎出来作为不同的初始化函数
+启动时通过system-type来判断操作系统类型来加载不同的配置。当然不限于来区分操作系统，也可以区分
+不同的电脑，这里本人目前没有这个需求。如果有需求可以加上。
+
 #+BEGIN_SRC emacs-lisp
 (defun windows-setup ()
     (setq
     font-height 110
     font-size 13
     org-plantuml-jar-path (expand-file-name "d:/Program/emacs-26.2/plantuml.jar")
-    default-directory "D:/Program/emacs-26.2/work"
+    default-directory "D:/Program/emacs-26.2/"
+    emacs-d-root "D:/Program/emacs-26.2/.emacs.d/"
     os-shell-root "c:/Users/Administrator/.babun/cygwin/bin/"
     config-base-dir "E:/nutstore/2017pc")
     (message "windows-setup done!")
@@ -114,6 +124,7 @@ Enable evil-leader First
     font-size 14
     org-plantuml-jar-path (expand-file-name "~/local/lib/plantuml.jar")
     default-directory "~/work"
+    emacs-d-root "~/.emacs.d/"
     os-shell-root "/bin/"
     config-base-dir "~/nutstore/2017pc")
     (message "mac-os-setup done!")
@@ -125,6 +136,7 @@ Enable evil-leader First
     font-size 13
     org-plantuml-jar-path (expand-file-name "~/local/lib/plantuml.jar")
     default-directory "~/work"
+    emacs-d-root "~/.emacs.d/"
     os-shell-root "/usr/bin/"
     config-base-dir "~/lab/")
     (message "linux-setup done!")
@@ -168,8 +180,8 @@ Enable evil-leader First
     ))
 
 (evil-leader/set-key
-    "tt" 'dopace-loop-alpha
-    "tf" 'toggle-frame-fullscreen
+    "ta" 'dopace-loop-alpha
+    "tF" 'toggle-frame-fullscreen
 )
 #+END_SRC
 
@@ -178,14 +190,65 @@ Enable evil-leader First
 (defun dopace-utils/open-init-config-file ()
   "Show FAQ and launch swiper session."
   (interactive)
-  (find-file-read-only
-   (expand-file-name "init.el" (concat config-base-dir "/config.org")))
-  (swiper " user-config"))
+  (find-file
+   (expand-file-name "dopace.org" (concat config-base-dir "/emacs/dopace/"))))
+
+(defun dopace-utils/reload-dopace-config ()
+  (interactive)
+  (load-file 
+  (expand-file-name "init.el" emacs-d-root)))
 
 (evil-leader/set-key
  "fi" 'dopace-utils/open-init-config-file
+; "fR" 'dopace-utils/reload-dopace-config
 )
+
+(defun dopace-utils/open-custom-file ()
+  "Show FAQ and launch swiper session."
+  (interactive)
+  (find-file-read-only
+   (expand-file-name "custom.el" "~/.emacs.d/"))
+  (swiper "veriable"))
+
 #+END_SRC
+
+#+begin_src
+(defun dotspacemacs/sync-configuration-layers (&optional arg)
+  "Synchronize declared layers in dotfile with spacemacs.
+
+Called with `C-u' skips `dotspacemacs/user-config'.
+Called with `C-u C-u' skips `dotspacemacs/user-config' _and_ preleminary tests."
+  (interactive "P")
+  (when (file-exists-p dotspacemacs-filepath)
+    (with-current-buffer (find-file-noselect dotspacemacs-filepath)
+      (let ((dotspacemacs-loading-progress-bar nil))
+        (setq spacemacs-loading-string "")
+        (save-buffer)
+        (let ((tests-ok (or (equal arg '(16)) (dotspacemacs/test-dotfile t))))
+          (if tests-ok
+              (progn
+                (load-file buffer-file-name)
+                (dotspacemacs|call-func dotspacemacs/init
+                                        "Calling dotfile init...")
+                (dotspacemacs|call-func dotspacemacs/user-init
+                                        "Calling dotfile user init...")
+                (setq dotspacemacs-editing-style
+                      (dotspacemacs//read-editing-style-config
+                       dotspacemacs-editing-style))
+                (configuration-layer/sync)
+                (if (member arg '((4) (16)))
+                    (message (concat "Done (`dotspacemacs/user-config' "
+                                     "function has been skipped)."))
+                  (dotspacemacs|call-func dotspacemacs/user-config
+                                          "Calling dotfile user config...")
+                  (run-hooks 'spacemacs-post-user-config-hook)
+                  (message "Done.")))
+            (switch-to-buffer-other-window dotspacemacs-test-results-buffer)
+            (spacemacs-buffer/warning "Some tests failed, check `%s' buffer"
+                                      dotspacemacs-test-results-buffer))))))
+  (when (configuration-layer/package-usedp 'spaceline)
+    (spacemacs//set-powerline-for-startup-buffers)))
+#+end_src
 
 ** Hide Source block as defualt Org-mode
 #+begin_src elisp
@@ -490,7 +553,8 @@ for ivy history using
 )
 #+END_SRC
 
-*** 快速切换上一个buffer，摘自spacemacs
+*** Switch buffer toggle
+快速切换上一个buffer，摘自spacemacs
 #+begin_src emacs-lisp
 (defun spacemacs/alternate-buffer (&optional window)
   "Switch back and forth between current and last buffer in the
@@ -513,8 +577,16 @@ current window."
 (evil-leader/set-key "<tab>" #'spacemacs/alternate-buffer )
 #+end_src
 
-** projec
+** project
+** application
+#+BEGIN_SRC emacs-lisp
+(evil-leader/set-key
+"aa" 'org-agenda
+)
+#+END_SRC
+
 ** +file
+
 #+BEGIN_SRC emacs-lisp
 (evil-leader/set-key
 "fc" 'copy-file
@@ -541,78 +613,79 @@ current window."
 ** setup
 =M-x customize-group RET org-appearance RET=
 =M-x customize-group RET org-faces RET=
-~face~
-*face*
+~monospace~
+*Bold*
 /italic/
-+shanchuxian+
-_xiahuaxian_
++strike-through+
+_underlined_
 E=mc^2
-
 #+BEGIN_SRC emacs-lisp
 (use-package org
   :mode ("\\.org\\'" . org-mode)
-    :bind
-    (("C-c l" . org-store-link)
-    ("C-c a" . org-agenda)
-    ("C-c b" . org-iswitchb)
-    ("C-c c" . org-capture))
-    :bind
-    (:map org-mode-map
-    ("M-n" . outline-next-visible-heading)
-    ("M-p" . outline-previous-visible-heading))
-    :custom
-    (org-src-window-setup 'current-window)
-    (org-return-follows-link t)
-    (org-babel-load-languages
-    '((emacs-lisp . t)
-        (python . t)))
-    (org-use-speed-commands t)
-    (org-catch-invisible-edits 'show)
-    :custom-face
-    (org-default ((t (:inherit default :background "snow"))))  
-    (variable-pitch ((t (:family "iA Writer Duospace" :height 0.9))))
-    (org-document-title ((t (:weight bold :height 1.3 :slant italic))))
-    (org-meta-line ((t (:inherit font-lock-comment-face :foreground "chocolate3" :slant italic :height 0.94))))
-    (org-date ((t (:foreground "chocolate3" :underline t :slant italic :height 0.94)))) ;DATA
-    (org-document-info-keyword ((t (:inherit shadow :foreground "snow4" :slant italic :height 0.94))))
-    (org-document-info ((t (:foreground "midnight blue" :slant italic))))
-    ;; (org-done ((t (:strike-through t :weight bold))))
-    ;; (org-headline-done ((t (:strike-through t))))
-    (org-level-1 ((t (:foreground "blue"))))
-    (org-level-2 ((t (:foreground "SaddleBrown"))))
-    (org-level-3 ((t (:foreground "purple"))))
-    (org-block-begin-line ((t (:foreground "#a98" :background "#fff4ea" :slant italic :underline t))))
-    (org-block-end-line ((t (:foreground "#a98" :background "#fff4ea" :slant italic :underline t))))
-    (org-block ((t (:background "#fffef5"))))
-    (org-quote ((t (:background "#0ffef5"))))
-    (org-special-keyword ((t (:foreground "chocolate3" :slant italic :height 0.94)))) ;DEDLINE SCHEDUE
-    (org-image-actual-width (/ (display-pixel-width) 2))
-    ;; :custom
-    ;; (org-structure-template-alist '(("a" . "export ascii")
-    ;;                                 ("c" . "center")
-    ;;                                 ("C" . "comment")
-    ;;                                 ("e" . "example")
-    ;;                                 ("E" . "export")
-    ;;                                 ("h" . "export html")
-    ;;                                 ("l" . "export latex")
-    ;;                                 ("q" . "quote")
-    ;;                                 ("s" . "src")
-    ;;                                 ("v" . "verse")
-    ;;                                 ("el" . "src emacs-lisp")
-    ;;                                 ("d" . "definition")
-    ;;                                 ("t" . "theorem")))
-    :config
-    (setq system-time-locale "C")       ;set date english format
-    (setq org-startup-indented t)
-    (require 'org-habit)
-    (when (version<= "9.2" (org-version))
-    (require 'org-tempo))
+  :bind
+  (("C-c l" . org-store-link)
+  ("C-c a" . org-agenda)
+  ("C-c b" . org-iswitchb)
+  ("C-c c" . org-capture))
+  :bind
+  (:map org-mode-map
+  ("M-n" . outline-next-visible-heading)
+  ("M-p" . outline-previous-visible-heading))
+  :custom
+  (org-src-window-setup 'current-window)
+  (org-return-follows-link t)
+  (org-babel-load-languages
+  '((emacs-lisp . t)
+      (python . t)))
+  (org-use-speed-commands t)
+  (org-catch-invisible-edits 'show)
+  :custom-face
+  (org-default ((t (:inherit default :background "snow"))))  
+  (variable-pitch ((t (:family "iA Writer Duospace" :height 0.9))))
+  (org-document-title ((t (:foreground "black" :slant italic :weight bold :height 1.3))))
+  (org-meta-line ((t (:inherit font-lock-comment-face :foreground "chocolate3" :slant italic :height 0.94))))
+  (org-date ((t (:foreground "chocolate3" :underline t :slant italic :height 0.94)))) ;DATA
+  (org-document-info-keyword ((t (:inherit shadow :foreground "snow4" :slant italic :height 0.94))))
+  (org-document-info ((t (:foreground "midnight blue" :slant italic))))
+  (org-level-1 ((t (:foreground "blue"))))
+  (org-level-2 ((t (:foreground "SaddleBrown"))))
+  (org-level-3 ((t (:foreground "purple"))))
+  (org-block-begin-line ((t (:foreground "#a98" :background "#fff4ea" :slant italic :underline t))))
+  (org-block-end-line ((t (:foreground "#a98" :background "#fff4ea" :slant italic :underline t))))
+  (org-block ((t (:background "#fffef5"))))
+  (org-quote ((t (:background "#0ffef5"))))
+  (org-checkbox ((t (:inherit org-todo :foreground "black" :weight bold))))
+  (org-checkbox-statistics-done ((t (:foreground "green4"))))
+  (org-checkbox-statistics-todo ((t (:inherit org-todo :foreground "firebrick1" :weight bold))))
+  (org-special-keyword ((t (:foreground "chocolate3" :slant italic :height 0.94)))) ;DEDLINE SCHEDUE
+  (org-image-actual-width (/ (display-pixel-width) 2))
+  ;; :custom
+  ;; (org-structure-template-alist '(("a" . "export ascii")
+  ;;                                 ("c" . "center")
+  ;;                                 ("C" . "comment")
+  ;;                                 ("e" . "example")
+  ;;                                 ("E" . "export")
+  ;;                                 ("h" . "export html")
+ ;;                                 ("l" . "export latex")
+  ;;                                 ("q" . "quote")
+  ;;                                 ("s" . "src")
+  ;;                                 ("v" . "verse")
+  ;;                                 ("el" . "src emacs-lisp")
+  ;;                                 ("d" . "definition")
+  ;;                                 ("t" . "theorem")))
+  :config
+  (setq system-time-locale "C")       ;set date english format
+  (setq org-startup-indented t)
+  (setq org-latex-compiler "xelatex")
+  (require 'org-habit)
+  (when (version<= "9.2" (org-version))
+  (require 'org-tempo))
 
-    (setq org-latex-pdf-process '("xelatex -interaction nonstopmode %f"
-                            "xelatex -interaction nonstopmode %f"))
-    (setq org-latex-default-packages-alist
-    (remove '("AUTO" "inputenc" t) org-latex-default-packages-alist))
-    )
+  (setq org-latex-pdf-process '("xelatex -interaction nonstopmode %f"
+                          "xelatex -interaction nonstopmode %f"))
+  (setq org-latex-default-packages-alist
+  (remove '("AUTO" "inputenc" t) org-latex-default-packages-alist))
+  )
 #+END_SRC
 
 :PROPERTIES:
@@ -638,7 +711,6 @@ E=mc^2
 
 ;; Finally, the hook
 (add-hook 'org-agenda-mode-hook 'my-org-agenda-hl-line)
-
 #+END_SRC
 
 ** Org-GTD     
@@ -664,7 +736,7 @@ xelatex比较新,对UTF的支持更傻瓜，但是对有些旧的宏可能不支
 I use export to LaTeX through ox-latex, using xelatex for a nicer export template.
 #+begin_src emacs-lisp
 (use-package ox-latex
-  :disabled t
+    :disabled t
     :after org
     :ensure nil
     :config
@@ -675,7 +747,7 @@ I use export to LaTeX through ox-latex, using xelatex for a nicer export templat
     (org-latex-default-table-environment "tabular")
     (org-latex-tables-booktabs t)
     (org-latex-listings 'minted)
-    (org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
+    ;(org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
     (org-latex-classes
      '(("article"
         "\\documentclass{article}
@@ -690,32 +762,32 @@ I use export to LaTeX through ox-latex, using xelatex for a nicer export templat
   \\usepackage{tabularx}
   \\usepackage{parskip}
   \\linespread{1.1}"
-        ("\\section{%s}" . "\\section*{%s}")
-        ("\\subsection{%s}" . "\\subsection*{%s}")
-        ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-        ("\\paragraph{%s}" . "\\paragraph*{%s}")
-        ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))
+       ("\\section{%s}" . "\\section*{%s}")
+       ("\\subsection{%s}" . "\\subsection*{%s}")
+       ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+       ("\\paragraph{%s}" . "\\paragraph*{%s}")
+       ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))
        ("book"
         "\\documentclass[10pt]{memoir}
-                          \\usepackage{charter}
-                          \\usepackage[T1]{fontenc}
-                          \\usepackage{booktabs}
-                          \\usepackage{amsmath}
-                          \\usepackage{minted}
-                          \\usemintedstyle{borland}
-                          \\usepackage{color}
-                          \\usepackage{epigraph}
-                          \\usepackage{enumitem}
-                          \\setlist{nosep}
-                          \\setlength\\epigraphwidth{13cm}
-                          \\setlength\\epigraphrule{0pt}
-                          \\usepackage{fontspec}
-                          \\usepackage{graphicx}
-                          \\usepackage{hyperref}
-                          \\hypersetup {colorlinks = true, allcolors = red}
-                          \\title{}
-                          [NO-DEFAULT-PACKAGES]
-                          [NO-PACKAGES]"
+         \\usepackage{charter}
+         \\usepackage[T1]{fontenc}
+         \\usepackage{booktabs}
+         \\usepackage{amsmath}
+         \\usepackage{minted}
+         \\usemintedstyle{borland}
+         \\usepackage{color}
+         \\usepackage{epigraph}
+         \\usepackage{enumitem}
+         \\setlist{nosep}
+         \\setlength\\epigraphwidth{13cm}
+         \\setlength\\epigraphrule{0pt}
+         \\usepackage{fontspec}
+         \\usepackage{graphicx}
+         \\usepackage{hyperref}
+         \\hypersetup {colorlinks = true, allcolors = red}
+         \\title{}
+         [NO-DEFAULT-PACKAGES]
+         [NO-PACKAGES]"
         ("\\chapter{%s}" . "\\chapter*{%s}")
         ("\\section{%s}" . "\\section*{%s}")
         ("\\subsection{%s}" . "\\subsection*{%s}")
@@ -784,30 +856,46 @@ I use export to LaTeX through ox-latex, using xelatex for a nicer export templat
 #+end_src
 
 ** Org-formula-preview
+According to the [[https://orgmode.org/manual/Previewing-LaTeX-fragments.html#Previewing-LaTeX-fragments][documentation]]
+or =(info "(org) Previewing LaTeX fragments")=
+A quick ~C-h org-format-latex-options RET~ to show export format Infor 
 #+begin_src emacs-lisp
-
+(if (string-equal system-type "darwin")      
+  (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.3))
+  )
 #+end_src
 
 ** Auctex
 #+begin_src emacs-lisp
 (use-package auctex
-:defer t
-:ensure t
-:config
-(setq TeX-auto-save t)
-(setq TeX-parse-self t)
-)
-(executable-find "dvipng")
+  :defer t
+  :mode ("\\.tex\\'" . latex-mode)
+  :custom
+  (TeX-auto-save t)
+  (TeX-parse-self t)
+  (TeX-syntactic-comment t)
+  ;; Synctex Support
+  (TeX-source-correlate-start-server nil)
+  ;; Don't insert line-break at inline math
+  (LaTeX-fill-break-at-separators nil)
+  (TeX-view-program-list '(("zathura" "zathura --page=%(outpage) %o")))
+  (TeX-view-program-selection '((output-pdf "zathura")))
+  :config
+  (add-hook 'LaTeX-mode-hook
+            (lambda ()
+              (company-mode)
+              (setq TeX-PDF-mode t)
+              (setq TeX-source-correlate-method 'synctex)
+              (setq TeX-source-correlate-start-server t)))
+  (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+  (add-hook 'LaTeX-mode-hook 'TeX-source-correlate-mode)
+  (add-hook 'LaTeX-mode-hook 'TeX-PDF-mode))
 #+end_src
 AUCTEX is an extensible package for writing and formatting TEX files in GNU Emacs. It supports many different TEX macro packages, including AMS-TEX, LATEX, Texinfo, ConTEXt, and docTEX (dtx files).
 可以用来预览org-mode中的latex公式（M-x org-toggle-latex-fragment)
 
-预览时遇到问题：
-org-compile-file: File "c:/Users/ADMINI~1/AppData/Local/Temp/orgtexIbqETP.dvi" wasn’t produced.  Please adjust ‘dvipng’ part of ‘org-preview-latex-process-alist’.
-就是auctex没有安装导致的
-
 ** Automatic latex image toggling when cursor is on a fragment
-#+begin_src elisp
+#+begin_src emacs-lisp
 (defvar org-latex-fragment-last nil
   "Holds last fragment/environment you were on.")
 
@@ -887,19 +975,230 @@ org-compile-file: File "c:/Users/ADMINI~1/AppData/Local/Temp/orgtexIbqETP.dvi" w
 
 #+end_src
 
+** Tutorial
+
+Org-mode的一些使用方法和配置收集整理，仅当参考手册，并无生效的配置
+
+*** links
+Org支持多种格式的超链接，对于符合链接规则的内容，会自动视其为链接，暴扣文件，网页，邮箱，
+新闻组，BBDB数据库，IRC会话和记录等等，一下例子都是有效的链接形式
+http://www.google.com
+file:~/.zshrc
+file:/Users/jijing/.alias
+file:~/.alias
+docview:dopace.pdf::12
+mailto:goco.v@163.com
+mhe:folder#id
+rmail:folder#id              
+bbdb:R.*Stallman
+irc:/irc.com/#emacs/bob     
+irc://irc.freenode.net/scala
+info:org:External%20links  
+其中docview pdf需要保证Ghostscript和xpdf正确安装✔️
+
+对于文件链接，可以用::增加定位符的方式链接到指定位置，也可以是行号或者搜索选项
+file:~/code/main.c:122
+file:./dopace.org::Org-mod
+file:./dopace.org::#my-custom-id
+
+当然也可以用传统的显示的指定超链接,格式如下
+#+BEGIN_EXAMPLE
+[link][description]]
+[[link]]
+#+END_EXAMPLE
+
+前面的例子都是外部链接，Org-mode还支持内部链接：
+#+BEGIN_EXAMPLE
+定义锚点 #<<my-anchor>>
+[[my-anchor][内部链接]]
+#+END_EXAMPLE
+
+脚注可以看作是一种特殊的内部链接，但是要求具有"fn:"前缀：
+#+BEGIN_EXAMPLE
+添加脚注链接 [[fn:footprint1][脚注1]]
+定义脚注 [fn:footprint1]
+#+END_EXAMPLE
+
+*** list 
+Org 能够识别有序列表、无序列表和描述列表。
+1. 无序列表项以‘-’、‘+’或者‘*‘开头。
+2. 有序列表项以‘1.’或者‘1)’开头。
+3. 描述列表用‘::’将项和描述分开。
+4. 统一列表缩进相同，添加子列表时，需在列表投添加tab缩进
+   - 子列表更进一步缩进
+     1) 3级列表
+     2) 3级列表
+   - 子列表M-Enter增加同级列表
+有序列表和无序列表都以缩进表示层级。只要对齐缩进，不管是换行还是分块都认为是处于当前列表项。
+
+*** Meta-Info
+主要的Meta元, 一般建议放在文件头
+#+BEGIN_EXAMPLE
+#+TITLE:       the title to be shown (default is the buffer name)
+#+AUTHOR:      the author (default taken from user-full-name)
+#+DATE:        a date, an Org timestamp1, or a format string for format-time-string
+#+EMAIL:       his/her email address (default from user-mail-address)
+#+DESCRIPTION: the page description, e.g. for the XHTML meta tag
+#+KEYWORDS:    the page keywords, e.g. for the XHTML meta tag
+#+LANGUAGE:    language for HTML, e.g. ‘en’ (org-export-default-language)
+#+TEXT:        Some descriptive text to be inserted at the beginning.
+#+TEXT:        Several lines may be given.
+#+OPTIONS:     H:2 num:t toc:t \n:nil @:t ::t |:t ^:t f:t TeX:t ...
+#+BIND:        lisp-var lisp-val, e.g.: org-export-latex-low-levels itemize
+               You need to confirm using these, or configure org-export-allow-BIND
+#+LINK_UP:     the ``up'' link of an exported page
+#+LINK_HOME:   the ``home'' link of an exported page
+#+LATEX_HEADER: extra line(s) for the LaTeX header, like \usepackage{xyz}
+#+EXPORT_SELECT_TAGS:   Tags that select a tree for export
+#+EXPORT_EXCLUDE_TAGS:  Tags that exclude a tree from export
+#+XSLT:        the XSLT stylesheet used by DocBook exporter to generate FO file
+#+END_EXAMPLE
+
+其中#+OPTIONS是复合的选项
+#+BEGIN_EXAMPLE
+H:         set the number of headline levels for export
+num:       turn on/off section-numbers
+toc:       turn on/off table of contents, or set level limit (integer)
+\n:        turn on/off line-break-preservation (DOES NOT WORK)
+@:         turn on/off quoted HTML tags
+::         turn on/off fixed-width sections
+|:         turn on/off tables
+^:         turn on/off TeX-like syntax for sub- and superscripts.  If
+           you write "^:{}", a_{b} will be interpreted, but
+           the simple a_b will be left as it is.
+-:         turn on/off conversion of special strings.
+f:         turn on/off footnotes like this[1].
+todo:      turn on/off inclusion of TODO keywords into exported text
+tasks:     turn on/off inclusion of tasks (TODO items), can be nil to remove
+           all tasks, todo to remove DONE tasks, or list of kwds to keep
+pri:       turn on/off priority cookies
+tags:      turn on/off inclusion of tags, may also be not-in-toc
+<:         turn on/off inclusion of any time/date stamps like DEADLINES
+*:         turn on/off emphasized text (bold, italic, underlined)
+TeX:       turn on/off simple TeX macros in plain text
+LaTeX:     configure export of LaTeX fragments.  Default auto
+skip:      turn on/off skipping the text before the first heading
+author:    turn on/off inclusion of author name/email into exported file
+email:     turn on/off inclusion of author email into exported file
+creator:   turn on/off inclusion of creator info into exported file
+timestamp: turn on/off inclusion creation time into exported file
+d:         turn on/off inclusion of drawers
+#+END_EXAMPLE
+
+*** block
+- <s source 代码
+- <e exampe 例子
+- <v verse  默认内容不换行，实现普通换行
+- <q quote  引用，与默认格式相比，左右都会留出缩进
+- <c center 居中区块
+- <l latex
+- <h HTML   嵌入html
+  相当于在发布的html中插入"c++"代码
+  #+BEGIN_SRC html
+    #+BEGIN_HTML
+    <div class="cnblogs_Highlighter">
+    <pre class="brush:cpp">
+    int main()
+    {
+        return 0;
+    }
+    </pre>
+    </div>
+    #+END_HTML
+  #+END_SRC
+- #+begin_comment
+- #+caption:This is the caption for the next table (or link)
+- #LABLE: tbl:table1
+  可以在需要的地方 \ref{table1} 引用该表格
+- #+INCLUDE: "~/.emacs" src emacs-lisp
+  当导出文档时，你可以包含其他文件中的内容。比如，想包含你的“.emacs”文件，你可以用：
+  可选的第二个第三个参数是组织方式（例如，“quote”，“example”，或者“src”），
+  如果是 “src”，语言用来格式化内容。组织方式是可选的，如果不给出，
+  文本会被当作 Org 模式的正常处理。用 C-c ,可以访问包含的文件。
+
+*** html-export template
+#+BEGIN_SRC elisp
+(setq org-publish-project-alist
+     '(("org"
+        :base-directory "~/org/"
+        :publishing-directory "~/public_html"
+        :section-numbers nil
+        :table-of-contents nil
+        :style "<link rel=\"stylesheet\"
+               href=\"../other/mystyle.css\"
+               type=\"text/css\"/>")))
+#+END_SRC
+在文件头添加
+
+*** pdf(latex)-export template
+#+BEGIN_SRC elisp
+(require 'ox-latex)
+(unless (boundp 'org-latex-classes)
+  (setq org-latex-classes nil))
+(add-to-list 'org-latex-classes
+             '("article"
+               "\\documentclass{article}"
+               ("\\section{%s}" . "\\section*{%s}")))
+#+END_SRC
+
+=#+LaTeX_CLASS: article0=
+#+BEGIN_SRC elisp
+(add-to-list 'org-latex-classes
+             '("article0"
+               "\\documentclass{article}"
+               ("\\section{%s}" . "\\section*{%s}")
+               ("\\subsection{%s}" . "\\subsection*{%s}")
+               ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+               ("\\paragraph{%s}" . "\\paragraph*{%s}")
+               ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+#+END_SRC
+
+=#+LaTeX_CLASS: book0=
+#+BEGIN_SRC elisp
+(add-to-list 'org-latex-classes
+             '("book0"
+               "\\documentclass{book}"
+               ("\\part{%s}" . "\\part*{%s}")
+               ("\\chapter{%s}" . "\\chapter*{%s}")
+               ("\\section{%s}" . "\\section*{%s}")
+               ("\\subsection{%s}" . "\\subsection*{%s}")
+               ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))
+             )
+#+END_SRC
+
+当然可以设置更多的格式，只需要在文件头通过 =#LaTex_CLASS: XXX= 来导入
+
+*** FQA
+- Please adjust ‘dvipng’ part of ‘org-preview-latex-process-alist
+  org-compile-file: File "c:/Users/ADMINI~1/AppData/Local/Temp/orgtexIbqETP.dvi" wasn’t produced.  Please adjust ‘dvipng’ part of ‘org-preview-latex-process-alist’.
+  将latex的默认编译器设置为 xelatex生效
+  预览时遇到问题：
+  =(setq org-latex-compiler "xelatex")=
+- LaTeX Error: File `xyz.sty' not found.
+  =sudo tlmgr install xyz.sty=
+- BEGIN_QUOTE 被动生效
+  在本文档突然出现pdf,latex预览不能正常工作，但在其他文档中能正常工作，怀疑文档中的Meta元配置有误
+  在文件头已经添加了 =#+LATEX_HEADER: \usepackage[UTF8]{ctex}= 没有问题
+  后检查文档 [[file:test.org::Meta-Info][Meta-Info]] 说明举例时将Meta元放在BEGIN_QUOTE中，QUOTE中的元是会生效，
+  正确的做法是应该将 **实例的代码或者Mete元放在BEGIN_EXAMPLE以防止被动生效导致异常**
+
+*** Reference
+*参考资料*
+- LaTex Export https://orgmode.org/worg/org-tutorials/org-latex-export.html
+- Emacs org-mode https://www.cnblogs.com/holbrook/archive/2012/04/12/2444992.html
+
 * Program-Language
 ** Python
 ** Scala
 ** Lisp
 ** Verilog
 ** C
-* TODO Test
+* Test
 DEADLINE: <2019-06-06 Thu> SCHEDULED: <2019-06-06 Thu>
 :LOGBOOK:
 CLOCK: [2019-06-06 Thu 20:43]--[2019-06-06 Thu 21:53] =>  1:10
 CLOCK: [2019-06-06 Thu 20:42]--[2019-06-06 Thu 20:42] =>  0:00
 :END:
-
 #+BEGIN_SRC elisp
 ;(require 'org-crypt)
 (getenv "PATH")
@@ -911,51 +1210,17 @@ CLOCK: [2019-06-06 Thu 20:42]--[2019-06-06 Thu 20:42] =>  0:00
 ;                              "xelatex -interaction nonstopmode %f"))
 #+END_SRC
 
-* Todos [1/9]
+* Todos [10/11]
 DEADLINE: <2019-06-06 Thu> SCHEDULED: <2019-06-06 Thu>
 - [X] SPC-TAB spacemacs/alternate-buffer
-- [ ] SPC-f-e-R dotspacemacs/sync-configuration-layers
-#+begin_src
-(defun dotspacemacs/sync-configuration-layers (&optional arg)
-  "Synchronize declared layers in dotfile with spacemacs.
-
-Called with `C-u' skips `dotspacemacs/user-config'.
-Called with `C-u C-u' skips `dotspacemacs/user-config' _and_ preleminary tests."
-  (interactive "P")
-  (when (file-exists-p dotspacemacs-filepath)
-    (with-current-buffer (find-file-noselect dotspacemacs-filepath)
-      (let ((dotspacemacs-loading-progress-bar nil))
-        (setq spacemacs-loading-string "")
-        (save-buffer)
-        (let ((tests-ok (or (equal arg '(16)) (dotspacemacs/test-dotfile t))))
-          (if tests-ok
-              (progn
-                (load-file buffer-file-name)
-                (dotspacemacs|call-func dotspacemacs/init
-                                        "Calling dotfile init...")
-                (dotspacemacs|call-func dotspacemacs/user-init
-                                        "Calling dotfile user init...")
-                (setq dotspacemacs-editing-style
-                      (dotspacemacs//read-editing-style-config
-                       dotspacemacs-editing-style))
-                (configuration-layer/sync)
-                (if (member arg '((4) (16)))
-                    (message (concat "Done (`dotspacemacs/user-config' "
-                                     "function has been skipped)."))
-                  (dotspacemacs|call-func dotspacemacs/user-config
-                                          "Calling dotfile user config...")
-                  (run-hooks 'spacemacs-post-user-config-hook)
-                  (message "Done.")))
-            (switch-to-buffer-other-window dotspacemacs-test-results-buffer)
-            (spacemacs-buffer/warning "Some tests failed, check `%s' buffer"
-                                      dotspacemacs-test-results-buffer))))))
-  (when (configuration-layer/package-usedp 'spaceline)
-    (spacemacs//set-powerline-for-startup-buffers)))
-#+end_src
-- [ ] org bable source defualt-hidden
-- [ ] org-indent-mode add org-mode-hooks - [ ] company
-- [ ] youdao-dictionary
-- [ ] smartparens
-- [ ] snippets
-- [ ] Buffer 在新窗口中打开函数 快捷键
+- [X] SPC-f-e-R dotspacemacs/sync-configuration-layers
+- [X] org bable source defualt-hidden
+- [X] org-indent-mode add org-mode-hooks - [ ] company
+- [X] youdao-dictionary
+- [X] smartparens
+- [X] snippets
+- [X] Buffer 在新窗口中打开函数 快捷键
 - [ ] 窗口锁屏, 显示启动界面
+- [X] Latex预览
+- [X] org主题和coding主题设置
+  
