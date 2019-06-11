@@ -50,7 +50,7 @@ maintaining tidiness and performance.
 
 (use-package exec-path-from-shell
   :ensure t
-  :if (memq window-system '(mac ns))
+  :if (memq window-system '(mac ns x))
   :config
   (exec-path-from-shell-initialize))
 #+END_SRC
@@ -69,7 +69,7 @@ Enable evil-leader First
 (setq custom-file "~/.emacs.d/custom.el")
 (tool-bar-mode -1)
 (display-time-mode 1)
-(menu-bar-mode -1)
+(menu-bar-mode 1)
 
 ;;自动加载文件改动
 (global-auto-revert-mode 1)
@@ -95,6 +95,11 @@ Enable evil-leader First
 (recentf-mode 1)
 (global-set-key (kbd "C-c a")  'org-agenda)
 (global-set-key (kbd "C-c c")  'org-capture)
+#+END_SRC
+
+** Start-Message
+#+BEGIN_SRC emacs-lisp
+(setq inhibit-startup-message t)
 #+END_SRC
 
 * OS-setup
@@ -367,6 +372,7 @@ for ivy history using
   )
 )
 #+END_SRC
+
 #+BEGIN_SRC lisp-disabeld
 ;;; 存入 `~/.emacs.d/ivy-views'文件中
 (defun peng-save-ivy-views ()
@@ -395,7 +401,6 @@ for ivy history using
 ;;; 启动自动加载
 (add-hook 'emacs-startup-hook #'(lambda ()
                                (peng-load-ivy-views)))
-
 #+END_SRC
 
 *** projectile
@@ -434,7 +439,7 @@ for ivy history using
 (setq
     helm-follow-mode-persistent t)
 (evil-leader/set-key
-  "ag" 'helm-ag
+  "ga" 'helm-ag
 )
 )
 #+END_SRC
@@ -444,7 +449,8 @@ for ivy history using
 (use-package ace-jump-mode
 :config
 (evil-leader/set-key
-"<SPC>" 'ace-jump-mode
+"gg" 'ace-jump-mode
+; "<SPC>" 'ace-jump-mode
 ; "<SPC>" 'ace-jump-char-mode
 )
 )
@@ -469,6 +475,19 @@ for ivy history using
 (evil-commentary-mode)
 )
 #+end_src
+
+*** Yasnippet
+http://joaotavora.github.io/yasnippet/
+#+BEGIN_SRC emacs-lisp
+(use-package yasnippet
+  :diminish yas-global-mode yas-minor-mode
+  :config
+  (setq yas-snippet-dirs '("d:/Program/emacs-26.2/.emacs.d/yasnippet-snippets/snippets/"
+                           "e:/nutstore/2017pc/emacs/dopace/snippets/"
+                           ))
+  (yas-global-mode 1) ;;要放在最后，否则要M-x yas-relad-all
+)
+#+END_SRC
 
 * KeyBindings
 ** Inctroductions(Not config)
@@ -609,6 +628,12 @@ current window."
 )
 #+END_SRC
 
+* Program-Language
+** Python
+** Scala
+** Lisp
+** Verilog
+** C
 * Org-mode
 ** setup
 =M-x customize-group RET org-appearance RET=
@@ -650,9 +675,9 @@ E=mc^2
   (org-level-1 ((t (:foreground "blue"))))
   (org-level-2 ((t (:foreground "SaddleBrown"))))
   (org-level-3 ((t (:foreground "purple"))))
-  (org-block-begin-line ((t (:foreground "#a98" :background "#fff4ea" :slant italic :underline t))))
-  (org-block-end-line ((t (:foreground "#a98" :background "#fff4ea" :slant italic :underline t))))
-  (org-block ((t (:background "#fffef5"))))
+  (org-block-begin-line ((t (:foreground "#999" :background "#f3f3f3" :slant italic :underline t)))) ;fff4ea
+  (org-block-end-line ((t (:foreground "#999" :background "#f3f3f3" :slant italic :underline t))))   ;fff4ea
+  (org-block ((t (:background "#fffffa")))) ;fffef5
   (org-quote ((t (:background "#0ffef5"))))
   (org-checkbox ((t (:inherit org-todo :foreground "black" :weight bold))))
   (org-checkbox-statistics-done ((t (:foreground "green4"))))
@@ -666,7 +691,7 @@ E=mc^2
   ;;                                 ("e" . "example")
   ;;                                 ("E" . "export")
   ;;                                 ("h" . "export html")
- ;;                                 ("l" . "export latex")
+  ;;                                 ("l" . "export latex")
   ;;                                 ("q" . "quote")
   ;;                                 ("s" . "src")
   ;;                                 ("v" . "verse")
@@ -860,10 +885,49 @@ According to the [[https://orgmode.org/manual/Previewing-LaTeX-fragments.html#Pr
 or =(info "(org) Previewing LaTeX fragments")=
 A quick ~C-h org-format-latex-options RET~ to show export format Infor 
 #+begin_src emacs-lisp
+(setq org-latex-compiler "xelatex")
 (if (string-equal system-type "darwin")      
   (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.3))
   )
+(setq org-latex-create-formula-image-program 'dvipng)
+
+(if (memq system-type '(windows-nt cygwin ms-dos))
+  (setq 
+    temporary-file-directory "e:/.emacs_temp" ;;解决latex 不能识别 C:/ADMIN~1/路径的问题
+    org-format-latex-options (plist-put org-format-latex-options :scale 1.6))
+)
 #+end_src
+
+[[https://blog.csdn.net/winterTTr/article/details/7273283][emacs调用外部命令的环境设置]]
+
+(load "auctex.el" nil t t)
+(load "preview.el" nil t t)
+M-x customize-variable RET preview-image-type RET
+*** FAQ
+- Macos下能正常preview，但是windows下依然报错"c:/Users/ADMINI~1/AppData/Local/Temp/orgtexGzYR6k.dvi" wasn't produced
+  https://orgmode.org/worg/org-tutorials/org-latex-preview.html
+  latex   xxx.tex  -->  xxx.dvi
+  dvipng  xxx.dvi  -->  xxx.png
+  确保以下命令都能被找到
+  (executable-find "dvipng")
+  (executable-find "xelatex")
+  (executable-find "dvisvgm")
+  (executable-find "convert")
+  配置都没有问题
+  C-x b 打开 **\*Org Preview LaTex Output\*** 
+  #+BEGIN_SRC 
+  ! I can't find file `c:/Users/ADMINI'.
+  <to be read again> 
+    \protect 
+  <*> c:/Users/ADMINI~
+    1/AppData/Local/Temp/orgtexGzYR6k.tex
+  #+END_SRC
+  发现路径在ADMINI~1处break了，怀疑是latex不能正确识别路径中包含"~"字符
+  在cmd或shell命令行中执行
+  latex c:/Users/ADMINI~1/AppData/Local/Temp/orgtex26eeuz.dvi 
+  果然失败
+  解决方法：
+  将临时路径重置，比如(setq temporary-file-directory "e:/.emacs_temp")
 
 ** Auctex
 #+begin_src emacs-lisp
@@ -894,8 +958,11 @@ A quick ~C-h org-format-latex-options RET~ to show export format Infor
 AUCTEX is an extensible package for writing and formatting TEX files in GNU Emacs. It supports many different TEX macro packages, including AMS-TEX, LATEX, Texinfo, ConTEXt, and docTEX (dtx files).
 可以用来预览org-mode中的latex公式（M-x org-toggle-latex-fragment)
 
-** Automatic latex image toggling when cursor is on a fragment
-#+begin_src emacs-lisp
+** Automatic latex toggle
+
+Automatic latex image toggling when cursor is on a fragment
+
+#+begin_src emacs-lisp-bak
 (defvar org-latex-fragment-last nil
   "Holds last fragment/environment you were on.")
 
@@ -994,7 +1061,7 @@ bbdb:R.*Stallman
 irc:/irc.com/#emacs/bob     
 irc://irc.freenode.net/scala
 info:org:External%20links  
-其中docview pdf需要保证Ghostscript和xpdf正确安装✔️
+其中docview pdf需要保证Ghostscript和xpdf正确安装✔
 
 对于文件链接，可以用::增加定位符的方式链接到指定位置，也可以是行号或者搜索选项
 file:~/code/main.c:122
@@ -1187,12 +1254,167 @@ d:         turn on/off inclusion of drawers
 - LaTex Export https://orgmode.org/worg/org-tutorials/org-latex-export.html
 - Emacs org-mode https://www.cnblogs.com/holbrook/archive/2012/04/12/2444992.html
 
-* Program-Language
-** Python
-** Scala
-** Lisp
-** Verilog
-** C
+* Ui
+** Basic-face
+=customize-group doom-modeline=
+=customize-group mode-lilne-faces=
+
+#+BEGIN_SRC emacs-lisp
+(custom-set-faces
+ '(fringe ((t (:inherit nil :background "white"))))
+ '(mode-line          ((t (:inherit mode-line :background "#e0e0f3" :foreground "grey20" :weight light))))
+ '(mode-line-inactive ((t (:inherit mode-line :background "grey95"  :foreground "grey50" :weight light))))
+ '(font-lock-comment-face ((t (:foreground "grey60"))))
+ '(font-lock-comment-face ((t (:foreground "LightSkyBlue4"))))
+ '(vertical-border ((t (:foreground "gray70" ))))
+ '(linum ((t (:background "#f5f5f5" :foreground "grey50"))))
+)
+#+END_SRC
+
+** Custom-theme
+#+BEGIN_SRC elisp
+(custom-set-faces
+ '(default ((t (:background "gray20" :foreground "ghost white"))))
+
+ '(ac-candidate-face ((t (:background "gray15" :foreground "ghost white"))))
+ '(ac-completion-face ((t (:background "olivedrab" :foreground "khaki"))))
+ '(ac-selection-face ((t (:foreground "khaki" :background "olivedrab"))))
+ '(bold ((t (:bold t :weight bold))))
+ '(bold-italic ((t (:italic t :bold t :slant italic :weight bold))))
+ '(border ((t (nil))))
+ '(buffer-menu-buffer ((t (:bold t :foreground "khaki" :weight bold))))
+ '(button ((t (:bold t :weight bold :underline nil :foreground "MediumPurple3" :background "gray20"))))
+
+ '(completions-annotations ((t (:underline t))))
+ '(completions-common-part ((t (:foreground "ghost white" :background "gray20"))))
+ '(completions-first-difference ((t (:bold t :weight bold))))
+
+ '(cursor ((t (:background "khaki"))))
+
+ '(dired-directory ((t (:bold t :weight bold :foreground "PaleGreen3"))))
+ '(dired-flagged ((t (:bold t :weight bold :foreground "Pink"))))
+ '(dired-header ((t (:bold t :weight bold :foreground "PaleGreen3"))))
+ '(dired-ignored ((t (:foreground "grey70"))))
+ ;; '(dired-mark ((t (:foreground "#ffa0a0"))))
+ '(dired-mark ((t (:foreground "goldenrod"))))
+ '(dired-marked ((t (:bold t :weight bold :foreground "DarkOrange"))))
+ '(dired-perm-write ((t (:foreground "LightSkyBlue3"))))
+ '(dired-symlink ((t (:foreground "khaki"))))
+ '(dired-warning ((t (:bold t :weight bold :foreground "goldenrod"))))
+
+ '(elscreen-tab-background-face ((t (:background "gray15"))))
+ '(elscreen-tab-control-face
+   ((t (:bold t :weight bold :foreground "goldenrod" :background "gray15" :underline nil))))
+ '(elscreen-tab-current-screen-face
+   ((t (:bold t :background "gray15" :foreground "goldenrod" :weight bold))))
+ '(elscreen-tab-other-screen-face ((t (:background "gray15" :foreground "gray60"))))
+
+ '(error ((t (:bold t :foreground "Pink" :weight bold))))
+ '(escape-glyph ((t (:foreground "cyan"))))
+ '(file-name-shadow ((t (:foreground "grey70"))))
+
+ ;; '(font-lock-builtin-face ((t (:foreground "MediumPurple3"))))
+ '(font-lock-builtin-face ((t (:foreground "moccasin"))))
+ '(font-lock-comment-delimiter-face ((t (:foreground "LightSkyBlue3"))))
+ '(font-lock-comment-face ((t (:foreground "LightSkyBlue3"))))
+ ;; '(font-lock-constant-face ((t (:foreground "#ffa0a0"))))
+ ;; '(font-lock-doc-face ((t (:foreground "IndianRed3"))))
+ '(font-lock-constant-face ((t (:foreground "salmon1"))))
+ '(font-lock-doc-face ((t (:foreground "IndianRed"))))
+ '(font-lock-function-name-face ((t (:bold t :foreground "PaleGreen3" :weight bold))))
+ ;; '(font-lock-function-name-face ((t (:foreground "PaleGreen3" ))))
+ '(font-lock-keyword-face ((t (:foreground "khaki"))))
+ ;; '(font-lock-keyword-face ((t (:bold t :foreground "khaki"))))
+ '(font-lock-negation-char-face ((t (nil))))
+ '(font-lock-preprocessor-face ((t (:foreground "MediumPurple3"))))
+ '(font-lock-regexp-grouping-backslash ((t (:bold t :weight bold))))
+ '(font-lock-regexp-grouping-construct ((t (:bold t :weight bold))))
+ '(font-lock-string-face ((t (:foreground "#ffa0a0"))))
+ ;; '(font-lock-string-face ((t (:foreground "IndianRed"))))
+ '(font-lock-type-face ((t (:bold t :foreground "PaleGreen3" :weight bold))))
+ '(font-lock-variable-name-face ((t (:foreground "ghost white"))))
+ '(font-lock-warning-face ((t (:bold t :foreground "goldenrod" :weight bold))))
+
+ '(fringe ((t (:background "gray20"))))
+ '(glyphless-char ((t (:height 0.6))))
+ '(header-line ((t (:background "gray15" :box (:color "gray20" :line-width 2)))))
+ '(help-argument-name ((t (nil))))
+ '(highlight ((t (:background "olivedrab" :foreground "khaki"))))
+ '(ido-first-match ((t (:bold t :foreground "PaleGreen3" :weight bold))))
+ '(ido-only-match ((t (:bold t :foreground "PaleGreen3" :weight bold))))
+ '(ido-subdir ((t (:bold t :weight bold :foreground "khaki"))))
+
+ '(isearch ((t (:background "olivedrab" :foreground "khaki"))))
+ '(isearch-fail ((t (:background "red4"))))
+ '(isearch-lazy-light
+   ((t (:bold t :background "gray20" :foreground "ghost white" :weight bold))))
+
+ '(italic ((t (:underline t))))
+
+ '(jabber-activity-face ((t (:bold t :weight bold :foreground "PaleGreen3"))))
+ '(jabber-activity-personal-face ((t (:bold t :foreground "#ffa0a0" :weight bold))))
+ '(jabber-chat-prompt-foreign ((t (:bold t :foreground "PaleGreen3" :weight bold))))
+ '(jabber-chat-prompt-local ((t (:bold t :foreground "#ffa0a0" :weight bold))))
+ '(jabber-chat-prompt-system ((t (:bold t :foreground "LightSkyBlue3" :weight bold))))
+ '(jabber-rare-time-face ((t (:bold t :foreground "PaleGreen3" :weight bold))))
+ '(jabber-roster-user-away ((t (:foreground "IndianRed3"))))
+ '(jabber-roster-user-chatty ((t (:bold t :foreground "PaleGreen3" :weight bold))))
+ '(jabber-roster-user-dnd ((t (:foreground "LightSkyBlue3"))))
+ '(jabber-roster-user-error ((t (:bold t :weight bold :foreground "goldenrod"))))
+ '(jabber-roster-user-offline ((t (:background "gray20" :foreground "gray40"))))
+ '(jabber-roster-user-online ((t (:bold t :foreground "khaki" :weight bold))))
+ '(jabber-roster-user-xa ((t (:foreground "IndianRed3"))))
+ '(jabber-title-large ((t (:bold t :weight bold :height 1.728))))
+ '(jabber-title-medium ((t (:bold t :weight bold :height 1.44))))
+ '(jabber-title-small ((t (:bold t :weight bold :height 1.2))))
+
+ '(lazy-highlight ((t (:background "paleturquoise4"))))
+ '(link ((t (:bold t :background "gray20" :foreground "MediumPurple3" :underline nil :weight bold))))
+ '(link-visited ((t (:bold t :underline nil :foreground "MediumPurple3" :background "gray20" :weight bold))))
+ '(linum ((t (:background "gray20" :foreground "yellow"))))
+ '(match ((t (:bold t :weight bold))))
+ '(menu ((t (nil))))
+ '(minibuffer-prompt ((t (:bold t :foreground "khaki" :weight bold))))
+
+ '(mode-line
+   ((t (:box (:color "gray15" :line-width 1)
+             :background "gray15" :foreground "gray60"))))
+ '(mode-line-buffer-id
+   ((t (:bold t :background "gray15" :box (:color "gray20" :line-width 2)
+              :foreground "goldenrod" :weight bold))))
+ '(mode-line-emphasis ((t (:bold t :weight bold))))
+ '(mode-line-highlight ((t (:box (:line-width 2 :color "grey40" :style released-button)))))
+ '(mode-line-inactive
+   ((t (:foreground "gray60" :background "gray15"
+                    :box (:color "gray15" :line-width 1)))))
+
+ '(mouse ((t (:background "khaki"))))
+ '(next-error ((t (:background "olivedrab" :foreground "khaki"))))
+ '(nobreak-space ((t (:foreground "cyan" :underline t))))
+ '(query-replace ((t (:foreground "khaki" :background "olivedrab"))))
+ '(region ((t (:foreground "khaki" :background "olivedrab"))))
+ '(scroll-bar ((t (nil))))
+ '(secondary-selection ((t (:background "SkyBlue4"))))
+ '(shadow ((t (:foreground "grey70"))))
+ '(show-paren-match ((t (:bold t :foreground "PaleGreen3" :weight bold))))
+ '(show-paren-mismatch ((t (:bold t :foreground "goldenrod" :weight bold))))
+ '(success ((t (:bold t :foreground "Green1" :weight bold))))
+ '(tool-bar
+   ((t (:background "grey75" :foreground "black" :box (:line-width 1 :style released-button)))))
+ '(tooltip ((t (:background "lightyellow" :foreground "black"))))
+ '(trailing-whitespace ((t (:bold t :weight bold :foreground "goldenrod"))))
+ '(underline ((t (:underline t))))
+
+ '(vertical-border ((t (:foreground "gray10" ))))
+ '(warning ((t (:bold t :foreground "DarkOrange" :weight bold))))
+ '(widget-button ((t (:bold t :weight bold))))
+ '(widget-button-pressed ((t (:foreground "red1"))))
+ '(widget-documentation ((t (:foreground "lime green"))))
+ '(widget-field ((t (:background "dim gray"))))
+ '(widget-inactive ((t (:foreground "grey70"))))
+ '(widget-single-line-field ((t (:background "dim gray")))) )                       
+#+END_SRC
+
 * Test
 DEADLINE: <2019-06-06 Thu> SCHEDULED: <2019-06-06 Thu>
 :LOGBOOK:
@@ -1203,6 +1425,7 @@ CLOCK: [2019-06-06 Thu 20:42]--[2019-06-06 Thu 20:42] =>  0:00
 ;(require 'org-crypt)
 (getenv "PATH")
 (executable-find "dvipng")
+(executable-find "dvisvgm")
 (executable-find "auctex")
 (type-of (file-expand-wildcards "*.*"))
 (global-set-key (kbd "<f12>") 'org-agenda)
@@ -1210,15 +1433,17 @@ CLOCK: [2019-06-06 Thu 20:42]--[2019-06-06 Thu 20:42] =>  0:00
 ;                              "xelatex -interaction nonstopmode %f"))
 #+END_SRC
 
-* Todos [10/11]
+
+* Todos [8/12]
 DEADLINE: <2019-06-06 Thu> SCHEDULED: <2019-06-06 Thu>
 - [X] SPC-TAB spacemacs/alternate-buffer
 - [X] SPC-f-e-R dotspacemacs/sync-configuration-layers
 - [X] org bable source defualt-hidden
 - [X] org-indent-mode add org-mode-hooks - [ ] company
 - [X] youdao-dictionary
-- [X] smartparens
-- [X] snippets
+- [ ] smartparens
+- [ ] snippets
+- [ ] company
 - [X] Buffer 在新窗口中打开函数 快捷键
 - [ ] 窗口锁屏, 显示启动界面
 - [X] Latex预览

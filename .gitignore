@@ -17,4 +17,6 @@ custom.el
 dopace.pdf
 dopace.tex
 missfont.log
+ltximg
+test.el
 *.swp~
