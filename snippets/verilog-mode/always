@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: always_pos_ne 
+# key: always
+# group : definitions
+# --
+always @(posedge clk or negedge rstn)
+  if(!rstn) begin
+    ${1:name} <= ${2:${3:1}'b0} ;$0
+  end else if(${6:start}) begin
+    ${4:name} <= ${5:xxx} ;
+  end

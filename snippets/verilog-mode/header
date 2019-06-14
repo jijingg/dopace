@@ -1,0 +1,16 @@
+# -*- mode: snippet -*-
+# name: verilog_file_header 
+# key: <hd
+# --
+//*****************************************************************************************//
+//                  `(insert current-company)` Copyright `(insert (format-time-string "%Y"))`
+//                  PROJECT   : U3/emtc
+//                  FILE_NAME : `(insert (file-name-nondirectory (buffer-file-name)))`
+//                  AUTHOR    : `(insert user-full-name)`( `(insert user-company-email)` )
+//*****************************************************************************************//
+//                  Revised History 
+//
+//  Data         Who          Description
+// `(insert (format-time-string "%Y-%m-%d"))`    `(insert user-name)`       Initial Version.     
+//*****************************************************************************************//
+$0

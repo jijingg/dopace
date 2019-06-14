@@ -1,11 +1,32 @@
 #+TITLE: Dopace(a emacs configuration)
+#+DESCRIPTION: Doom Look and Spacemacs Power orgnized by Org and Use-package
 #+AUTHOR: jijing
 #+EMAIL: goco.v@163.com
 #+LATEX_HEADER: \usepackage[UTF8]{ctex}
 #+STARTUP: indent
 
+* Introduction
+** why Emacs
+** why Org-config
+*** why not Spacemacs
+** about author
+*** Main-language
+- Verilog
+- Python
+- Scala
+- C
+- Chisel
+*** Info-config
+#+BEGIN_SRC emacs-lisp
+(setq user-full-name "JijingGuo"
+      user-name "Jijing"
+      current-company "PineCone.ltd"
+      user-company-email "JijingGuo@pinecone.net")
+#+END_SRC
+
 * Basic-Config
-** ELPA source
+** Initial-start
+*** ELPA source
 Use-package allows for isolation of package configuration, while
 maintaining tidiness and performance.
 #+BEGIN_SRC emacs-lisp
@@ -55,6 +76,22 @@ maintaining tidiness and performance.
   (exec-path-from-shell-initialize))
 #+END_SRC
 
+*** evil-mode
+有时候在某些mode下比如verilog-mode，input关键字后Esc不是退出Insert模式，而是会触发Abbrev
+这个需要在evil-mode启动之前设置=(setq evil-want-abbrev-expand-on-insert-exit nil)=
+即放在initial中即可。
+为了保证evil-mode在它的关联模块之前启动，需要将其安置到其关联模块之前比如（evil-leader）之前
+#+BEGIN_SRC emacs-lisp
+  (use-package evil
+        :ensure t
+        :init
+        (setq evil-want-abbrev-expand-on-insert-exit nil) ; Disable Esc as abbrev prefix in any-mode
+        :config
+        (evil-mode t))
+;        :hook (after-init . evil-mode))
+#+END_SRC
+
+*** evil-leader
 Enable evil-leader First
 #+BEGIN_SRC emacs-lisp
 (use-package evil-leader
@@ -69,7 +106,7 @@ Enable evil-leader First
 (setq custom-file "~/.emacs.d/custom.el")
 (tool-bar-mode -1)
 (display-time-mode 1)
-(menu-bar-mode 1)
+(menu-bar-mode -1)
 
 ;;自动加载文件改动
 (global-auto-revert-mode 1)
@@ -99,10 +136,15 @@ Enable evil-leader First
 
 ** Start-Message
 #+BEGIN_SRC emacs-lisp
-(setq inhibit-startup-message t)
+;(setq inhibit-startup-message t)
 #+END_SRC
 
 * OS-setup
+** Install
+*** Windows
+安装好Emacs以后，修改注册表将默认路径指向安装路径：
+找到HKEY_LOCAL_MACHINE\SOFTWARE\GNU\Emacs（如果没有则手动添加项），
+在此项下添加字符串值，名称为HOME，值为安装路径（如D:\Program\emacs-26.2)
 ** os-init
 
 很多时候我们需要跨平台的支持，比如可能个人电脑是mac，公司用的是windows,工作开发又在linux上。
@@ -283,19 +325,12 @@ Called with `C-u C-u' skips `dotspacemacs/user-config' _and_ preleminary tests."
 
 #+BEGIN_SRC emacs-lisp
 (use-package doom-modeline
-      :ensure t
-      :hook (after-init . doom-modeline-mode)
-      :config
-      (setq doom-modeline-bar-width 4)
-      (setq doom-modeline-height 20)
+  :ensure t
+  :hook (after-init . doom-modeline-mode)
+  :config
+  (setq doom-modeline-bar-width 4)
+  ;(setq doom-modeline-height 20)
 )
-#+END_SRC
-
-*** evil-mode
-#+BEGIN_SRC emacs-lisp
-(use-package evil
-      :ensure t
-      :hook (after-init . evil-mode))
 #+END_SRC
 
 *** which-key
@@ -345,62 +380,44 @@ for ivy history using
 *** evil-leader
 *** eyebrowse
 #+BEGIN_SRC emacs-lisp
-(use-package eyebrowse
-  :init
-  (setq eyebrowse-new-workspace t
-        eyebrowse-wrap-around t)
-  :config
-  (eyebrowse-mode)
-  (evil-leader/set-key
-    "lp" 'eyebrowse-prev-window-config
-    "ln" 'eyebrowse-next-window-config
-    "ld" 'eyebrowse-close-window-config
-    "lr" 'eyebrowse-rename-window-config
-    "l." 'eyebrowse-switch-to-window-config
-    "l0" 'eyebrowse-switch-to-window-config-0
-    "l1" 'eyebrowse-switch-to-window-config-1
-    "l2" 'eyebrowse-switch-to-window-config-2
-    "l3" 'eyebrowse-switch-to-window-config-3
-    "l4" 'eyebrowse-switch-to-window-config-4
-    "l5" 'eyebrowse-switch-to-window-config-5
-    "l6" 'eyebrowse-switch-to-window-config-6
-    "l7" 'eyebrowse-switch-to-window-config-7
-    "l8" 'eyebrowse-switch-to-window-config-8
-    "l9" 'eyebrowse-switch-to-window-config-9
-    "lc" 'eyebrowse-create-window-config
-    "ll" 'eyebrowse-last-window-config
+  (use-package eyebrowse
+    :after (ivy hydra)
+    :init
+    (setq eyebrowse-new-workspace t
+          eyebrowse-wrap-around t)
+    :config
+    (eyebrowse-mode)
+    (defhydra hydra-workspace-menu (:color pink
+                                    :idle 1.0 ;delay 1.0s
+                                    :hint nil)
+    "
+    ───────────────────────────────────────────────────────
+    _0_.._9_         nth/new workspace  _d_ close current workspace
+    _<tab>_/_l_      last workspace     _r_ rename current workspace
+    _n_^^            next workspace     _p_ prev workspace\n
+    "
+        ("p" eyebrowse-prev-window-config)
+        ("n" eyebrowse-next-window-config)
+        ("d" eyebrowse-close-window-config :exit t)
+        ("r" eyebrowse-rename-window-config :exit t)
+        ("." eyebrowse-switch-to-window-config :exit t)
+        ("0" eyebrowse-switch-to-window-config-0 :exit t)
+        ("1" eyebrowse-switch-to-window-config-1 :exit t)
+        ("2" eyebrowse-switch-to-window-config-2 :exit t)
+        ("3" eyebrowse-switch-to-window-config-3 :exit t)
+        ("4" eyebrowse-switch-to-window-config-4 :exit t)
+        ("5" eyebrowse-switch-to-window-config-5 :exit t)
+        ("6" eyebrowse-switch-to-window-config-6 :exit t)
+        ("7" eyebrowse-switch-to-window-config-7 :exit t)
+        ("8" eyebrowse-switch-to-window-config-8 :exit t)
+        ("9" eyebrowse-switch-to-window-config-9 :exit t)
+        ("<tab>" eyebrowse-last-window-config :exit t)
+        ("l" eyebrowse-last-window-config :exit t)
+        ("q" nil "quit")
+        ("c" nil "cancel" :color grey20)
+    )
+    (evil-leader/set-key "l" 'hydra-workspace-menu/body )
   )
-)
-#+END_SRC
-
-#+BEGIN_SRC lisp-disabeld
-;;; 存入 `~/.emacs.d/ivy-views'文件中
-(defun peng-save-ivy-views ()
-  (interactive)
-  (with-temp-file "~/.emacs.d/ivy-views"
-    (prin1 ivy-views (current-buffer))
-    (message "save ivy-views to ~/.emacs.d/ivy-views")))
-;;; 从文件中加载
-(defun peng-load-ivy-views ()
-  (interactive)
-  (setq ivy-views
-        (with-temp-buffer
-          (insert-file-contents "~/.emacs.d/ivy-views")
-          (read (current-buffer))))
-  (message "load ivy-views"))
-
-;;; 清除所有的views
-(defun peng-clear-ivy-views ()
-  (interactive)
-  (setq ivy-views nil))
-
-;;; 退出自动保存
-(add-hook 'kill-emacs-hook #'(lambda ()
-                               (peng-save-ivy-views)))
-
-;;; 启动自动加载
-(add-hook 'emacs-startup-hook #'(lambda ()
-                               (peng-load-ivy-views)))
 #+END_SRC
 
 *** projectile
@@ -481,11 +498,141 @@ http://joaotavora.github.io/yasnippet/
 #+BEGIN_SRC emacs-lisp
 (use-package yasnippet
   :diminish yas-global-mode yas-minor-mode
+  :custom
+  (yas-snippet-dirs (list (concat emacs-d-root "/yasnippet-snippets/snippets/")
+                          (concat config-base-dir "/emacs/dopace/snippets/")))
   :config
-  (setq yas-snippet-dirs '("d:/Program/emacs-26.2/.emacs.d/yasnippet-snippets/snippets/"
-                           "e:/nutstore/2017pc/emacs/dopace/snippets/"
-                           ))
+  ;(setq yas-snippet-dirs '("d:/Program/emacs-26.2/.emacs.d/yasnippet-snippets/snippets/"
+  ;                         "e:/nutstore/2017pc/emacs/dopace/snippets/"
+  ;                         ))
   (yas-global-mode 1) ;;要放在最后，否则要M-x yas-relad-all
+  (evil-leader/set-key 
+    "ii" 'yas-insert-snippet
+  )
+)
+#+END_SRC
+
+*** hungry-delete
+#+BEGIN_SRC emacs-lisp
+(use-package hungry-delete
+:ensure t
+:config
+(global-hungry-delete-mode)
+)
+#+END_SRC
+
+*** company
+#+BEGIN_SRC emacs-lisp
+(use-package company
+:ensure t
+:config
+(add-hook 'after-init-hook 'global-company-mode)
+(add-hook 'company-mode-hook 
+  (lambda ()
+    (setq company-idle-delay 0)
+   ;(define-key evil-insert-state-map (kbd "<tab>") 'company-indent-or-complete-common)
+   ;(define-key company-active-map (kbd "C-j") 'company-select-next)
+   ;(define-key company-active-map (kbd "C-d") 'company-select-previous)
+))
+)
+#+END_SRC
+**** Usage
+- <Tab> complete common part
+- <return> select candidate and done
+- M-n select-next 
+- M-p select-previous
+- C-n select nearest candidate before and done
+- C-p select nearest candidate after and done
+=M-x Customize-variable RET company-backends= to see or change the backends list 
+=M-x describe-function RET company-mode= for more information
+
+*** youdao-dictionary
+#+BEGIN_SRC emacs-lisp
+(use-package youdao-dictionary
+    :ensure t
+    :config 
+    (setq url-automatic-caching t)
+    (evil-leader/set-key 
+    "yd"  'youdao-dictionary-search-at-point+
+    )
+) 
+#+END_SRC
+
+*** smartparens
+#+BEGIN_SRC emacs-lisp
+(use-package smartparens
+    :ensure t
+    :disabled t
+    :bind (:map smartparens-mode-map
+          ("C-M-f" . sp-forward-sexp)
+          ("C-M-b" . sp-backward-sexp)
+          )
+    :config
+    (add-hook 'emacs-lisp-mode-hook #'smartparens-mode)
+    (add-hook 'org-mode-hook #'smartparens-mode)
+)
+#+END_SRC
+=M-x sp-cheat-sheet=
+electric-pair-text-syntax-table
+electric-pair-mode
+
+#+begin_src elisp
+  (use-package smartparens
+    :hook
+    (after-init . smartparens-global-strict-mode)
+    :bind (:map smartparens-mode-map
+                ("C-M-f" . sp-forward-sexp)
+                ("C-M-b" . sp-backward-sexp)
+                ("C-M-u" . sp-backward-up-sexp)
+                ("C-M-d" . sp-down-sexp)
+                ("C-M-p" . sp-backward-down-sexp)
+                ("C-M-n" . sp-up-sexp)
+                ("C-M-s" . sp-splice-sexp)
+                ("C-M-<up>" . sp-splice-sexp-killing-backward)
+                ("C-M-<down>" . sp-splice-sexp-killing-forward)
+                ("C-M-r" . sp-splice-sexp-killing-around)
+                ("C-)" . sp-forward-slurp-sexp)
+                ("C-<right>" . sp-forward-slurp-sexp)
+                ("C-}" . sp-forward-barf-sexp)
+                ("C-<left>" . sp-forward-barf-sexp)
+                ("C-(" . sp-backward-slurp-sexp)
+                ("C-M-<left>" . sp-backward-slurp-sexp)
+                ("C-{" . sp-backward-barf-sexp)
+                ("C-M-<right>" . sp-backward-barf-sexp)
+                ("M-S" . sp-split-sexp))
+    :config
+    (require 'smartparens-config)
+    ;; Org-mode config
+    (sp-with-modes 'org-mode
+      (sp-local-pair "'" nil :unless '(sp-point-after-word-p))
+      (sp-local-pair "*" "*" :actions '(insert wrap) :unless '(sp-point-after-word-p sp-point-at-bol-p) :wrap "C-*" :skip-match 'sp--org-skip-asterisk)
+      (sp-local-pair "_" "_" :unless '(sp-point-after-word-p))
+      (sp-local-pair "/" "/" :unless '(sp-point-after-word-p) :post-handlers '(("[d1]" "SPC")))
+      (sp-local-pair "~" "~" :unless '(sp-point-after-word-p) :post-handlers '(("[d1]" "SPC")))
+      (sp-local-pair "=" "=" :unless '(sp-point-after-word-p) :post-handlers '(("[d1]" "SPC")))
+      (sp-local-pair "«" "»"))
+
+    (defun sp--org-skip-asterisk (ms mb me)
+      (or (and (= (line-beginning-position) mb)
+               (eq 32 (char-after (1+ mb))))
+          (and (= (1+ (line-beginning-position)) me)
+               (eq 32 (char-after me))))))
+#+end_src
+
+*** hydras
+https://github.com/jerrypnz/major-mode-hydra.el
+一个类似于which-key快捷键提示, 以及自定义快捷键
+是可以自定义模式，触发唤出来一组模式出来
+#+BEGIN_SRC emacs-lisp
+(use-package hydra
+  :config
+(define-key Buffer-menu-mode-map "." 'hydra-buffer-menu/body)
+  (defhydra dopace/hydra-zoom ()
+    "zoom"
+    ("i" text-scale-increase "in")
+    ("o" text-scale-decrease "out"))
+  (bind-key "C-c h z" 'dopace/hydra-zoom/body)
+  (evil-leader/set-key "z"  'dopace/hydra-zoom/body)
 )
 #+END_SRC
 
@@ -625,6 +772,7 @@ current window."
 (evil-leader/set-key
     "tl" 'linum-mode
     "tp" 'org-toggle-inline-images
+    "tm" 'toggle-menu-bar-mode-from-frame
 )
 #+END_SRC
 
@@ -633,6 +781,18 @@ current window."
 ** Scala
 ** Lisp
 ** Verilog
+#+BEGIN_SRC emacs-lisp
+(defun dopace/setup-verilog ()
+    (custom-set-variables
+    '(verilog-auto-inst-column 40)
+    '(verilog-auto-lineup (quote all))
+    '(verilog-indent-level-declaration 0)
+    '(verilog-indent-level 2)
+    '(verilog-indent-level-module 0))
+    )
+(add-hook 'verilog-mode-hook #'dopace/setup-verilog)
+#+END_SRC
+
 ** C
 * Org-mode
 ** setup
@@ -675,10 +835,10 @@ E=mc^2
   (org-level-1 ((t (:foreground "blue"))))
   (org-level-2 ((t (:foreground "SaddleBrown"))))
   (org-level-3 ((t (:foreground "purple"))))
-  (org-block-begin-line ((t (:foreground "#999" :background "#f3f3f3" :slant italic :underline t)))) ;fff4ea
-  (org-block-end-line ((t (:foreground "#999" :background "#f3f3f3" :slant italic :underline t))))   ;fff4ea
-  (org-block ((t (:background "#fffffa")))) ;fffef5
-  (org-quote ((t (:background "#0ffef5"))))
+  (org-block-begin-line ((t (:foreground "#999" :background "linen" :slant italic :underline t)))) ;fff4ea
+  (org-block-end-line ((t (:foreground "#999" :background "linen" :slant italic :underline t))))   ;fff4ea
+  (org-block ((t (:background "ivory")))) ;fffef5 fffffa
+  (org-quote ((t (:background "ivory"))))
   (org-checkbox ((t (:inherit org-todo :foreground "black" :weight bold))))
   (org-checkbox-statistics-done ((t (:foreground "green4"))))
   (org-checkbox-statistics-todo ((t (:inherit org-todo :foreground "firebrick1" :weight bold))))
@@ -1262,7 +1422,7 @@ d:         turn on/off inclusion of drawers
 #+BEGIN_SRC emacs-lisp
 (custom-set-faces
  '(fringe ((t (:inherit nil :background "white"))))
- '(mode-line          ((t (:inherit mode-line :background "#e0e0f3" :foreground "grey20" :weight light))))
+ '(mode-line          ((t (:inherit mode-line :background "#cdd8ee" :foreground "grey20" :weight light))))
  '(mode-line-inactive ((t (:inherit mode-line :background "grey95"  :foreground "grey50" :weight light))))
  '(font-lock-comment-face ((t (:foreground "grey60"))))
  '(font-lock-comment-face ((t (:foreground "LightSkyBlue4"))))
@@ -1278,7 +1438,7 @@ d:         turn on/off inclusion of drawers
 
  '(ac-candidate-face ((t (:background "gray15" :foreground "ghost white"))))
  '(ac-completion-face ((t (:background "olivedrab" :foreground "khaki"))))
- '(ac-selection-face ((t (:foreground "khaki" :background "olivedrab"))))
+ '(ac-selection-face ((t (:foreground "honeydew" :background "olivedrab"))))
  '(bold ((t (:bold t :weight bold))))
  '(bold-italic ((t (:italic t :bold t :slant italic :weight bold))))
  '(border ((t (nil))))
@@ -1433,8 +1593,7 @@ CLOCK: [2019-06-06 Thu 20:42]--[2019-06-06 Thu 20:42] =>  0:00
 ;                              "xelatex -interaction nonstopmode %f"))
 #+END_SRC
 
-
-* Todos [8/12]
+* Todos [10/13]
 DEADLINE: <2019-06-06 Thu> SCHEDULED: <2019-06-06 Thu>
 - [X] SPC-TAB spacemacs/alternate-buffer
 - [X] SPC-f-e-R dotspacemacs/sync-configuration-layers
@@ -1442,8 +1601,9 @@ DEADLINE: <2019-06-06 Thu> SCHEDULED: <2019-06-06 Thu>
 - [X] org-indent-mode add org-mode-hooks - [ ] company
 - [X] youdao-dictionary
 - [ ] smartparens
-- [ ] snippets
-- [ ] company
+- [ ] hydra
+- [X] snippets
+- [X] company
 - [X] Buffer 在新窗口中打开函数 快捷键
 - [ ] 窗口锁屏, 显示启动界面
 - [X] Latex预览

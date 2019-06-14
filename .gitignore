@@ -20,3 +20,4 @@ missfont.log
 ltximg
 test.el
 *.swp~
+/snippets/init
