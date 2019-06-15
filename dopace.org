@@ -12,8 +12,8 @@
 ** about author
 *** Main-language
 - Verilog
-- Python
 - Scala
+- Python
 - C
 - Chisel
 *** Info-config
@@ -145,6 +145,18 @@ Enable evil-leader First
 安装好Emacs以后，修改注册表将默认路径指向安装路径：
 找到HKEY_LOCAL_MACHINE\SOFTWARE\GNU\Emacs（如果没有则手动添加项），
 在此项下添加字符串值，名称为HOME，值为安装路径（如D:\Program\emacs-26.2)
+
+windows add cygwin-zshell
+#+BEGIN_SRC emacs-lisp
+(defun cygwin-shell ()
+  "Run cygwin bash in shell mode."
+  (interactive)
+  (let ((explicit-shell-file-name "C:/Users/Administrator/.babun/cygwin/bin/zsh"))
+    (call-interactively 'shell))
+)
+#+END_SRC
+
+*** MacOS
 ** os-init
 
 很多时候我们需要跨平台的支持，比如可能个人电脑是mac，公司用的是windows,工作开发又在linux上。
@@ -360,8 +372,8 @@ defualt coding theme
 (setq ivy-use-virtual-buffers t)
 (setq enable-recursive-minibuffers t)
 (global-set-key "\C-s" 'swiper)
-  (evil-leader/set-key
-    "M-x" 'counsel-M-x
+(global-set-key "\M-x" 'counsel-M-x)
+(evil-leader/set-key
     "ff"  'counsel-find-file
     "fb"  'counsel-bookmark
     "fr"  'counsel-recentf
@@ -536,6 +548,7 @@ http://joaotavora.github.io/yasnippet/
 ))
 )
 #+END_SRC
+
 **** Usage
 - <Tab> complete common part
 - <return> select candidate and done
@@ -558,67 +571,6 @@ http://joaotavora.github.io/yasnippet/
 ) 
 #+END_SRC
 
-*** smartparens
-#+BEGIN_SRC emacs-lisp
-(use-package smartparens
-    :ensure t
-    :disabled t
-    :bind (:map smartparens-mode-map
-          ("C-M-f" . sp-forward-sexp)
-          ("C-M-b" . sp-backward-sexp)
-          )
-    :config
-    (add-hook 'emacs-lisp-mode-hook #'smartparens-mode)
-    (add-hook 'org-mode-hook #'smartparens-mode)
-)
-#+END_SRC
-=M-x sp-cheat-sheet=
-electric-pair-text-syntax-table
-electric-pair-mode
-
-#+begin_src elisp
-  (use-package smartparens
-    :hook
-    (after-init . smartparens-global-strict-mode)
-    :bind (:map smartparens-mode-map
-                ("C-M-f" . sp-forward-sexp)
-                ("C-M-b" . sp-backward-sexp)
-                ("C-M-u" . sp-backward-up-sexp)
-                ("C-M-d" . sp-down-sexp)
-                ("C-M-p" . sp-backward-down-sexp)
-                ("C-M-n" . sp-up-sexp)
-                ("C-M-s" . sp-splice-sexp)
-                ("C-M-<up>" . sp-splice-sexp-killing-backward)
-                ("C-M-<down>" . sp-splice-sexp-killing-forward)
-                ("C-M-r" . sp-splice-sexp-killing-around)
-                ("C-)" . sp-forward-slurp-sexp)
-                ("C-<right>" . sp-forward-slurp-sexp)
-                ("C-}" . sp-forward-barf-sexp)
-                ("C-<left>" . sp-forward-barf-sexp)
-                ("C-(" . sp-backward-slurp-sexp)
-                ("C-M-<left>" . sp-backward-slurp-sexp)
-                ("C-{" . sp-backward-barf-sexp)
-                ("C-M-<right>" . sp-backward-barf-sexp)
-                ("M-S" . sp-split-sexp))
-    :config
-    (require 'smartparens-config)
-    ;; Org-mode config
-    (sp-with-modes 'org-mode
-      (sp-local-pair "'" nil :unless '(sp-point-after-word-p))
-      (sp-local-pair "*" "*" :actions '(insert wrap) :unless '(sp-point-after-word-p sp-point-at-bol-p) :wrap "C-*" :skip-match 'sp--org-skip-asterisk)
-      (sp-local-pair "_" "_" :unless '(sp-point-after-word-p))
-      (sp-local-pair "/" "/" :unless '(sp-point-after-word-p) :post-handlers '(("[d1]" "SPC")))
-      (sp-local-pair "~" "~" :unless '(sp-point-after-word-p) :post-handlers '(("[d1]" "SPC")))
-      (sp-local-pair "=" "=" :unless '(sp-point-after-word-p) :post-handlers '(("[d1]" "SPC")))
-      (sp-local-pair "«" "»"))
-
-    (defun sp--org-skip-asterisk (ms mb me)
-      (or (and (= (line-beginning-position) mb)
-               (eq 32 (char-after (1+ mb))))
-          (and (= (1+ (line-beginning-position)) me)
-               (eq 32 (char-after me))))))
-#+end_src
-
 *** hydras
 https://github.com/jerrypnz/major-mode-hydra.el
 一个类似于which-key快捷键提示, 以及自定义快捷键
@@ -626,13 +578,116 @@ https://github.com/jerrypnz/major-mode-hydra.el
 #+BEGIN_SRC emacs-lisp
 (use-package hydra
   :config
-(define-key Buffer-menu-mode-map "." 'hydra-buffer-menu/body)
-  (defhydra dopace/hydra-zoom ()
+  (defhydra dopace/hydra-zoom (:color pink)
     "zoom"
+    ("q" nil "cancel")
     ("i" text-scale-increase "in")
     ("o" text-scale-decrease "out"))
   (bind-key "C-c h z" 'dopace/hydra-zoom/body)
   (evil-leader/set-key "z"  'dopace/hydra-zoom/body)
+)
+#+END_SRC
+
+*** org-download
+This extension facilitates moving images from outside to emacs
+#+BEGIN_SRC emacs-lisp
+(use-package org-download
+  :ensure t
+  :disabled t
+  :config
+  (add-hook 'dired-mode-hook 'org-download-enable)
+)
+#+END_SRC
+
+*** electric-pair-mode
+=M-x sexp=
+#+BEGIN_SRC emacs-lisp
+(use-package electric
+  :ensure nil
+  :config
+  (electric-pair-mode 1)
+  (setq electric-pair-inhibit-predicate 'electric-pair-conservative-inhibit)
+  (show-paren-mode t)
+  (define-key electric-pair-mode-map (kbd "M-[") 'backward-sexp)
+  (define-key electric-pair-mode-map (kbd "M-]") 'forward-sexp)
+)
+#+END_SRC
+
+**** Usage
+| function           | keybindings | newbinding | description                                         |
+|--------------------+-------------+------------+-----------------------------------------------------|
+| backward-sexp      | C-M-b       | M-[        | move to the (beginning of) previous sexp unit       |
+| forward-sexp       | C-M-f       | M-]        | move to the (end of) next sexp unit                 |
+| kill-sexp          | C-M-k       |            | kill-sexp                                           |
+| backward-kill-sexp | C-Backspce  |            | Backward-kill-sexp                                  |
+| backward-up-list   | C-M-u       |            | move to the (beginning of) outer paren pair         |
+| down-list          | C-M-d       |            | move into the (beginning of) first inner paren pair |
+| raise-sexp         |             |            |                                                     |
+| indent-pp-sexp     |             |            |                                                     |
+| mark-sexp          |             |            |                                                     |
+
+**** test
+#+BEGIN_SRC elisp
+(add-hook 'python-mode-hook
+          (lambda ()
+            (expression 1)
+            (expression 2)
+            (expression 3)
+            ))
+#+END_SRC
+
+*** evil-surround
+https://github.com/emacs-evil/evil-surround
+#+BEGIN_SRC emacs-lisp
+  (use-package evil-surround
+    :ensure t
+    :config
+    (global-evil-surround-mode 1)
+    (setq evil-surround-pairs-alist
+     '((40 "(" . ")")
+       (91 "[" . "]")
+       (123 "{" . "}")
+       (41 "( " . " )")
+       (93 "[ " . " ]")
+       (125 "{ " . " }")
+       (35 "#{" . "}")
+       (98 "(" . ")")
+       (66 "{" . "}")
+       (62 "<" . ">")
+       (116 . evil-surround-read-tag)
+       (60 . evil-surround-read-tag)
+       (102 . evil-surround-function)))
+  )
+#+END_SRC
+**** Usage
+| Vi-state     | press   | before              | after                 |
+|--------------+---------+---------------------+-----------------------|
+| visal-state  | Sfprint | "Hello world"       | print("Hello world")  |
+| visal-state  | Sfprint | "Hello world"       | print("Hello world")  |
+| normal-state | cs"'    | "Hello world"       | 'Hello world'         |
+|              | cs'<q>  | 'Hello world'       | <q>Hello world</q>    |
+|              | cst"    | <q>Hello world</q>  | "Hello world"         |
+|              | ds"     | "Hello world"       | Hello world           |
+|              | ys2w]   | Hello java script   | [Hello java] script   |
+|              | yss}    | [Hello java] script | {[Hello java] script} |
+
+#+BEGIN_SRC emacs-lisp
+(message "------dopace debug--z----------")
+#+END_SRC
+*** magit
+magit-status
+magit-blame-addition 
+#+BEGIN_SRC emacs-lisp
+(use-package magit
+  :ensure t 
+  :hook
+  (magit-mode . hl-line-mode)
+  :custom
+  (magit-auto-revert-mode nil)
+  (magit-log-arguments '("-n100" "--graph" "--decorate"))
+  :config
+  (magit-define-popup-switch 'magit-log-popup
+    ?m "Omit merge commits" "--no-merges")
 )
 #+END_SRC
 
@@ -684,25 +739,37 @@ https://github.com/jerrypnz/major-mode-hydra.el
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp
-  (evil-leader/set-key
-    "w=" 'balance-windows
-    "wl" 'evil-window-right
-    "wh" 'evil-window-left
-    "wk" 'evil-window-up
-    "wj" 'evil-window-down
-    "wL" 'evil-window-move-far-right
-    "wH" 'evil-window-move-far-left
-    "wK" 'evil-window-move-very-top
-    "wJ" 'evil-window-move-very-bottom
-    "w-" 'split-window-below-and-focus
-    "w/" 'split-window-right-and-focus
-    "wv" 'split-window-below
-    "ws" 'split-window-right
-    "ws" 'other-window
-    "wd" 'delete-window
-    "wc" 'centered-buffer-mode
-    "wb" 'switch-to-minibuffer-window
-    )
+(defhydra hydra-window (:idle 1.0 ;delay 1.0s
+                        :exit t 
+                        :hint nil)
+  "
+  窗口跳转      ^^                    ^^                窗口移动
+  ^^^^──────  ^^────────────────  ^^───────────────   ^^^^──────
+    _k_^^     _/_ new-right-window   _s_ split-right         _K_^^
+  _h_   _l_   _-_ new-down-window    _v_ split-bottom      _H_   _L_
+    _j_^^     _d_ delete-window      _=_ balance-windows     _J_^^
+    
+  "
+  ("=" balance-windows )
+  ("l" evil-window-right ) 
+  ("h" evil-window-left )
+  ("k" evil-window-up )
+  ("j" evil-window-down )
+  ("L" evil-window-move-far-right )
+  ("H" evil-window-move-far-left )
+  ("K" evil-window-move-very-top )
+  ("J" evil-window-move-very-bottom )
+  ("-" split-window-below-and-focus)
+  ("/" split-window-right-and-focus)
+  ("v" split-window-below)
+  ("s" split-window-right)
+  ("o" other-window)
+  ("d" delete-window)
+  ("c" centered-buffer-mode)
+  ("b" switch-to-minibuffer-window)
+  ("q" nil "quit")
+)
+(evil-leader/set-key "w" 'hydra-window/body)
 #+END_SRC
 
 ** buffer
@@ -1420,15 +1487,21 @@ d:         turn on/off inclusion of drawers
 =customize-group mode-lilne-faces=
 
 #+BEGIN_SRC emacs-lisp
-(custom-set-faces
- '(fringe ((t (:inherit nil :background "white"))))
- '(mode-line          ((t (:inherit mode-line :background "#cdd8ee" :foreground "grey20" :weight light))))
- '(mode-line-inactive ((t (:inherit mode-line :background "grey95"  :foreground "grey50" :weight light))))
- '(font-lock-comment-face ((t (:foreground "grey60"))))
- '(font-lock-comment-face ((t (:foreground "LightSkyBlue4"))))
- '(vertical-border ((t (:foreground "gray70" ))))
- '(linum ((t (:background "#f5f5f5" :foreground "grey50"))))
-)
+  (custom-set-faces
+   '(fringe ((t (:inherit nil :background "white"))))
+   '(mode-line          ((t (:inherit mode-line :background "#cdd8ee" :foreground "grey20" :weight light))))
+   '(mode-line-inactive ((t (:inherit mode-line :background "grey95"  :foreground "grey50" :weight light))))
+   '(font-lock-comment-face ((t (:foreground "grey60"))))
+   '(font-lock-comment-face ((t (:foreground "LightSkyBlue4"))))
+   '(vertical-border ((t (:foreground "gray70" ))))
+   '(linum ((t (:background "#f5f5f5" :foreground "grey50"))))
+  )
+
+  ;; (add-hook 'org-mode-hook (lambda ()
+  ;;   (custom-set-faces 
+  ;;     '(font-lock-comment-face ((t (:foreground "green4"))))
+  ;;   ))
+  ;; )
 #+END_SRC
 
 ** Custom-theme
@@ -1593,19 +1666,21 @@ CLOCK: [2019-06-06 Thu 20:42]--[2019-06-06 Thu 20:42] =>  0:00
 ;                              "xelatex -interaction nonstopmode %f"))
 #+END_SRC
 
-* Todos [10/13]
+* Todos [11/13]
 DEADLINE: <2019-06-06 Thu> SCHEDULED: <2019-06-06 Thu>
 - [X] SPC-TAB spacemacs/alternate-buffer
 - [X] SPC-f-e-R dotspacemacs/sync-configuration-layers
 - [X] org bable source defualt-hidden
-- [X] org-indent-mode add org-mode-hooks - [ ] company
+- [X] org-indent-mode add org-mode-hooks 
 - [X] youdao-dictionary
+- [ ] magit
 - [ ] smartparens
-- [ ] hydra
+- [X] hydra
 - [X] snippets
 - [X] company
 - [X] Buffer 在新窗口中打开函数 快捷键
 - [ ] 窗口锁屏, 显示启动界面
 - [X] Latex预览
 - [X] org主题和coding主题设置
+  
   
