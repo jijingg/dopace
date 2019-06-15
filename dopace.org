@@ -639,26 +639,20 @@ This extension facilitates moving images from outside to emacs
 *** evil-surround
 https://github.com/emacs-evil/evil-surround
 #+BEGIN_SRC emacs-lisp
-  (use-package evil-surround
-    :ensure t
-    :config
-    (global-evil-surround-mode 1)
-    (setq evil-surround-pairs-alist
-     '((40 "(" . ")")
-       (91 "[" . "]")
-       (123 "{" . "}")
-       (41 "( " . " )")
-       (93 "[ " . " ]")
-       (125 "{ " . " }")
-       (35 "#{" . "}")
-       (98 "(" . ")")
-       (66 "{" . "}")
-       (62 "<" . ">")
-       (116 . evil-surround-read-tag)
-       (60 . evil-surround-read-tag)
-       (102 . evil-surround-function)))
-  )
+(use-package evil-surround
+  :ensure t
+  :config
+  (global-evil-surround-mode 1)
+  (add-hook 'c++-mode-hook (lambda ()
+                           (push '(?c . ("/*" . "*/")) evil-surround-pairs-alist)))
+  (setq-default evil-surround-pairs-alist
+    (progn
+      (push '(?\( . ("(" . ")")) evil-surround-pairs-alist)
+      (push '(?\[ . ("[" . "]")) evil-surround-pairs-alist)
+      (push '(?\{ . ("{" . "}")) evil-surround-pairs-alist)))
+)
 #+END_SRC
+
 **** Usage
 | Vi-state     | press   | before              | after                 |
 |--------------+---------+---------------------+-----------------------|
@@ -671,9 +665,6 @@ https://github.com/emacs-evil/evil-surround
 |              | ys2w]   | Hello java script   | [Hello java] script   |
 |              | yss}    | [Hello java] script | {[Hello java] script} |
 
-#+BEGIN_SRC emacs-lisp
-(message "------dopace debug--z----------")
-#+END_SRC
 *** magit
 magit-status
 magit-blame-addition 
@@ -765,6 +756,7 @@ magit-blame-addition
   ("s" split-window-right)
   ("o" other-window)
   ("d" delete-window)
+  ("m" delete-other-windows)
   ("c" centered-buffer-mode)
   ("b" switch-to-minibuffer-window)
   ("q" nil "quit")
@@ -846,6 +838,18 @@ current window."
 * Program-Language
 ** Python
 ** Scala
+#+BEGIN_SRC emacs-lisp
+(add-hook 'scala-mode-hook
+          (lambda ()
+            (show-paren-mode)
+            (yas-minor-mode)
+            (company-mode)
+            (ensime-mode)
+            (define-key ensime-mode-map (kbd "<tab>") 'yas-expand)
+            (scala-mode:goto-start-of-code))
+)
+#+END_SRC
+
 ** Lisp
 ** Verilog
 #+BEGIN_SRC emacs-lisp
