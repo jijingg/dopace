@@ -1741,15 +1741,14 @@ CLOCK: [2019-06-06 Thu 20:42]--[2019-06-06 Thu 20:42] =>  0:00
 )
 #+END_SRC
 
-* Todos [11/13]
+* Todos [12/13]
 DEADLINE: <2019-06-06 Thu> SCHEDULED: <2019-06-06 Thu>
 - [X] SPC-TAB spacemacs/alternate-buffer
 - [X] SPC-f-e-R dotspacemacs/sync-configuration-layers
 - [X] org bable source defualt-hidden
 - [X] org-indent-mode add org-mode-hooks 
 - [X] youdao-dictionary
-- [ ] magit
-- [ ] smartparens
+- [X] magit
 - [X] hydra
 - [X] snippets
 - [X] company
