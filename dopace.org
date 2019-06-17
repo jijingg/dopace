@@ -2,7 +2,6 @@
 #+DESCRIPTION: Doom Look and Spacemacs Power orgnized by Org and Use-package
 #+AUTHOR: jijing
 #+EMAIL: goco.v@163.com
-#+LATEX_HEADER: \usepackage[UTF8]{ctex}
 #+STARTUP: indent
 
 * Introduction
@@ -939,6 +938,11 @@ current window."
 +strike-through+
 _underlined_
 E=mc^2
+
+xelatex比较新,对UTF的支持更傻瓜，但是对有些旧的宏可能不支持。
+而pdflatex对宏的支持更全面，排版个人觉得更为好看，只不过体积有点大
+
+I use export to LaTeX through ox-latex, using xelatex for a nicer export template.
 #+BEGIN_SRC emacs-lisp
 (use-package org
   :mode ("\\.org\\'" . org-mode)
@@ -979,201 +983,241 @@ E=mc^2
   (org-checkbox-statistics-todo ((t (:inherit org-todo :foreground "firebrick1" :weight bold))))
   (org-special-keyword ((t (:foreground "chocolate3" :slant italic :height 0.94)))) ;DEDLINE SCHEDUE
   (org-image-actual-width (/ (display-pixel-width) 2))
-  ;; :custom
-  ;; (org-structure-template-alist '(("a" . "export ascii")
-  ;;                                 ("c" . "center")
-  ;;                                 ("C" . "comment")
-  ;;                                 ("e" . "example")
-  ;;                                 ("E" . "export")
-  ;;                                 ("h" . "export html")
-  ;;                                 ("l" . "export latex")
-  ;;                                 ("q" . "quote")
-  ;;                                 ("s" . "src")
-  ;;                                 ("v" . "verse")
-  ;;                                 ("el" . "src emacs-lisp")
-  ;;                                 ("d" . "definition")
-  ;;                                 ("t" . "theorem")))
   :config
   (setq system-time-locale "C")       ;set date english format
   (setq org-startup-indented t)
+  (setq org-latex-default-class "dopace-article")
   (setq org-latex-compiler "xelatex")
   (require 'org-habit)
   (when (version<= "9.2" (org-version))
   (require 'org-tempo))
 
-  (setq org-latex-pdf-process '("xelatex -interaction nonstopmode %f"
-                          "xelatex -interaction nonstopmode %f"))
+  (setq org-latex-pdf-process 
+        '("xelatex -shell-escape -interaction nonstopmode %f"
+          "xelatex -shell-escape -interaction nonstopmode %f"))
   (setq org-latex-default-packages-alist
   (remove '("AUTO" "inputenc" t) org-latex-default-packages-alist))
   )
 #+END_SRC
 
-:PROPERTIES:
-:reveal_background: ./images/whale.jpg
-:reveal_background_size: 200px
-:reveal_background_repeat: repeat
-:END:
-
-#+BEGIN_SRC elisp
-(mode-line italic mode-line)
-;; First create new face which is a copy of hl-line-face
-(copy-face 'hl-line 'hl-line-agenda-face)
-
-;; Change what you want in this new face 
-(set-face-attribute 'hl-line-agenda-face nil
-                    :box '(:color "deep pink" :line-width 2))
-
-;; The function to use the new face
-(defun my-org-agenda-hl-line ()
-  (set (make-local-variable 'hl-line-face) ; This is how to make it local
-       'hl-line-agenda-face)
-    (hl-line-mode))
-
-;; Finally, the hook
-(add-hook 'org-agenda-mode-hook 'my-org-agenda-hl-line)
-#+END_SRC
-
 ** Org-GTD     
 ** Org-Blog
 ** Org-export
-** Exporting PDFs
+*** dopace-article
+#+BEGIN_SRC emacs-lisp
+(add-to-list 'org-latex-classes
+'("dopace-article"
+"\\documentclass[11ptx,a4paper,sans]{article}
+\\usepackage[margin=1in]{geometry}
+\\usepackage{amsmath,amsthm,amssymb}
+\\usepackage{fontspec}
+\\setmonofont{Consolas}
+\\setsansfont{DejaVu Sans}
+\\usepackage{minted}
+\\usemintedstyle{borland}
+\\newtheorem{definition}{Definition}
+\\newtheorem{theorem}{Theorem}
+\\usepackage{tabularx}
+\\usepackage{color}
+\\usepackage{hyperref}
+\\hypersetup {colorlinks = true, allcolors = blue}
+\\usepackage[UTF8]{ctex}"
+("\\section{%s}" . "\\section*{%s}")
+("\\subsection{%s}" . "\\subsection*{%s}")
+("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+("\\paragraph{%s}" . "\\paragraph*{%s}")
+("\\subparagraph{%s}" . "\\subparagraph*{%s}"))
+)
+#+END_SRC
 
-如果使用xelatex，需要将一下头添加到org文件头
-#+begin_example
-#+LATEX_HEADER: \usepackage{xeCJK}
-#+LATEX_HEADER: \setCJKmainfont{SimSun}
-#+end_example
+=#+latex_header: \setmainfont{微软雅黑}=
+=#+latex_header: \setsansfont{DejaVu Sans}=
+其中 =\setmonofont{Consolas}= 设置等宽字体，一般用在source-code
+其他字体的设置可以直接添加到文件头
+#+BEGIN_SRC 
+#+LATEX_HEADER: \setmainfont{Times New Roman}
+#+LATEX_HEADER: \setsansfont{DejaVu Sans}
+#+LATEX_HEADER: \setmonofont{Latin Modern Mono}
+#+LATEX_HEADER: \setsansfont{[foo.ttf]}   
+#+END_SRC
 
-如果使用pdflatex，修改为
-#+begin_example
-#+LATEX_HEADER: \usepackage[UTF8]{ctex}
-#+LATEX_HEADER: \setCJKmainfont{SimSun}
-#+end_example
+*** dopace-spec
+#+BEGIN_SRC emacs-lisp
+(add-to-list 'org-latex-classes
+'("dopace-article"
+"\\documentclass[a4paper]{article}
+\\usepackage[margin=1in]{geometry}
+\\usepackage{amsmath,amsthm,amssymb}
+\\usepackage{fontspec}
+\\setmonofont{Consolas}
+\\setsansfont{DejaVu Sans}
+\\newtheorem{definition}{Definition}
+\\newtheorem{theorem}{Theorem}
+\\usepackage{tabularx}
+\\usepackage{color}
+\\usepackage{hyperref}
+\\hypersetup {colorlinks = true, allcolors = blue}
+\\usepackage[UTF8]{ctex}"
+("\\section{%s}" . "\\section*{%s}")
+("\\subsection{%s}" . "\\subsection*{%s}")
+("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+("\\paragraph{%s}" . "\\paragraph*{%s}")
+("\\subparagraph{%s}" . "\\subparagraph*{%s}"))
+)
+#+END_SRC
 
-xelatex比较新,对UTF的支持更傻瓜，但是对有些旧的宏可能不支持。
-而pdflatex对宏的支持更全面，排版个人觉得更为好看，只不过体积有点大
+*** dopace-book
+#+BEGIN_SRC elisp
+(add-to-list 'org-latex-classes
+             '("book"
+               "\\documentclass[10pt]{book}
+\\usepackage{charter}
+\\usepackage[T1]{fontenc}
+\\usepackage{booktabs}
+\\usepackage{amsmath}
+\\usepackage{minted}
+\\usemintedstyle{borland}
+\\usepackage{color}
+\\usepackage{epigraph}
+\\usepackage{enumitem}
+\\setlist{nosep}
+\\setlength\\epigraphwidth{13cm}
+\\setlength\\epigraphrule{0pt}
+\\usepackage{fontspec}
+\\usepackage{graphicx}
+\\usepackage{hyperref}
+\\hypersetup {colorlinks = true, allcolors = red}
+\\usepackage[UTF8]{ctex}
+[NO-DEFAULT-PACKAGES]
+[NO-PACKAGES]"
+               ("\\chapter{%s}" . "\\chapter*{%s}")
+               ("\\section{%s}" . "\\section*{%s}")
+               ("\\subsection{%s}" . "\\subsection*{%s}")
+               ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+               ("\\paragraph{%s}" . "\\paragraph*{%s}")
+               ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))
+)
+#+END_SRC
 
-I use export to LaTeX through ox-latex, using xelatex for a nicer export template.
-#+begin_src emacs-lisp
-(use-package ox-latex
-    :disabled t
-    :after org
-    :ensure nil
-    :config
-    :custom
-    (org-latex-pdf-process
-     (list "latexmk -shell-escape -bibtex -f -pdf %f"
-           "latexmk -shell-escape -bibtex -f -pdf %f"))
-    (org-latex-default-table-environment "tabular")
-    (org-latex-tables-booktabs t)
-    (org-latex-listings 'minted)
-    ;(org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
-    (org-latex-classes
-     '(("article"
-        "\\documentclass{article}
-  \\usepackage[margin=1in]{geometry}
-  \\usepackage{amsmath,amsthm,amssymb}
-  \\newtheorem{definition}{Definition}
-  \\newtheorem{theorem}{Theorem}
+其中添加 =[NO-DEFAULT-PACKAGES]= =[NO-PACKAGES]= 会完整覆盖原book的packages， 
+否则就是追加
+#+BEGIN_SRC emacs-lisp
+(add-to-list 'org-latex-classes
+'("dopace-book"
+"\\documentclass[11pt]{book}
+\\usepackage{graphicx}
+\\usepackage{grffile}
+\\usepackage{longtable}
+\\usepackage{wrapfig}
+\\usepackage{rotating}
+\\usepackage[normalem]{ulem}
+\\usepackage{amsmath}
+\\usepackage{textcomp}
+\\usepackage{amssymb}
+\\usepackage{capt-of}
+\\usepackage{hyperref}
+\\usepackage{color}
+\\hypersetup {colorlinks = true, allcolors = blue}
+\\usepackage{fontspec}
+\\setmonofont{Consolas}
+\\setsansfont{DejaVu Sans}
+\\usepackage[UTF8]{ctex}
+[NO-DEFAULT-PACKAGES]
+[NO-PACKAGES]"
+("\\chapter{%s}" . "\\chapter*{%s}")
+("\\section{%s}" . "\\section*{%s}")
+("\\subsection{%s}" . "\\subsection*{%s}")
+("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+("\\paragraph{%s}" . "\\paragraph*{%s}")
+("\\subparagraph{%s}" . "\\subparagraph*{%s}"))
+)
+#+END_SRC
+colorlinks 会链接的颜色
 
-  \\usepackage{booktabs}
-  \\usepackage{hyperref}
-  \\usepackage{minted}
-  \\usepackage{tabularx}
-  \\usepackage{parskip}
-  \\linespread{1.1}"
-       ("\\section{%s}" . "\\section*{%s}")
-       ("\\subsection{%s}" . "\\subsection*{%s}")
-       ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-       ("\\paragraph{%s}" . "\\paragraph*{%s}")
-       ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))
-       ("book"
-        "\\documentclass[10pt]{memoir}
-         \\usepackage{charter}
-         \\usepackage[T1]{fontenc}
-         \\usepackage{booktabs}
-         \\usepackage{amsmath}
-         \\usepackage{minted}
-         \\usemintedstyle{borland}
-         \\usepackage{color}
-         \\usepackage{epigraph}
-         \\usepackage{enumitem}
-         \\setlist{nosep}
-         \\setlength\\epigraphwidth{13cm}
-         \\setlength\\epigraphrule{0pt}
-         \\usepackage{fontspec}
-         \\usepackage{graphicx}
-         \\usepackage{hyperref}
-         \\hypersetup {colorlinks = true, allcolors = red}
-         \\title{}
-         [NO-DEFAULT-PACKAGES]
-         [NO-PACKAGES]"
-        ("\\chapter{%s}" . "\\chapter*{%s}")
-        ("\\section{%s}" . "\\section*{%s}")
-        ("\\subsection{%s}" . "\\subsection*{%s}")
-        ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-        ("\\paragraph{%s}" . "\\paragraph*{%s}")
-        ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))
-       ("latex-notes"
-        "\\documentclass[8pt]{article}
-    \\usepackage[margin={0.1in,0.1in}, a4paper,landscape]{geometry}
-    \\usepackage{hyperref}
-    \\usepackage{amsmath}
-    \\usepackage{multicol}
-    \\usepackage{booktabs}
-    \\usepackage{enumitem}
-    \\usepackage[compact]{titlesec}
-    \\renewcommand\\maketitle{}
-    \\titlespacing{\\section}{0pt}{*2}{*0}
-    \\titlespacing{\\subsection}{0pt}{*2}{*0}
-    \\titlespacing{\\subsubsection}{0pt}{*2}{*0}
-    \\titleformat*{\\section}{\\large\\bfseries}
-    \\titleformat*{\\subsection}{\\normalsize\\bfseries}
-    \\titleformat*{\\subsubsection}{\\normalsize\\bfseries}
-    \\setlist[itemize]{leftmargin=*}
-    \\setlist[enumerate]{leftmargin=*}
-    \\setlength\\columnsep{5pt}
-    \\setlength{\\columnseprule}{1pt}
-    \\setlength{\\parindent}{0cm}
-    \\usepackage{setspace}
-    \\singlespacing
-    \\setlist{nosep}
-    \\usepackage{minted}
-    \\usemintedstyle{bw}
-    \\usemintedstyle[java]{bw}
-    \\setminted[]{frame=none,fontsize=\\footnotesize,linenos=false}
-    "
-        ("\\section{%s}" . "\\section*{%s}")
-        ("\\subsection{%s}" . "\\subsection*{%s}")
-        ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-        ("\\paragraph{%s}" . "\\paragraph*{%s}")
-        ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))))
-    :config
-    (defvar-local jethro/org-multicol-latex-column-count
-      3
-      "Column count for multicolumn export.")
+*** dopace-report 
+report主要是增加了Part，比Chapter更高一级
+#+BEGIN_SRC emacs-lisp
+(add-to-list 'org-latex-classes
+'("dopace-report"
+"\\documentclass[11pt]{report}
+\\usepackage{fontspec}
+\\setmonofont{Consolas}
+\\setsansfont{DejaVu Sans}
+\\usepackage[UTF8]{ctex}"
+("\\part{%s}" . "\\part*{%s}")
+("\\chapter{%s}" . "\\chapter*{%s}")
+("\\section{%s}" . "\\section*{%s}")
+("\\subsection{%s}" . "\\subsection*{%s}")
+("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+("\\paragraph{%s}" . "\\paragraph*{%s}")
+("\\subparagraph{%s}" . "\\subparagraph*{%s}"))
+)
+#+END_SRC
 
-    (defun jethro/org-multicol-to-pdf (async subtreep visible-only body-only)
-      (let ((contents (buffer-string))
-            (buffer-name (file-name-sans-extension buffer-file-name))
-            (col-count jethro/org-multicol-latex-column-count))
-        (with-temp-buffer
-          (insert "#+LATEX_CLASS: latex-notes\n")
-          (insert contents)
-          (goto-char (point-min))
-          (org-next-visible-heading 1)
-          (insert
-           (format "#+BEGIN_EXPORT latex\n\\begin{multicols*}{%s}\n#+END_EXPORT\n" col-count))
-          (goto-char (point-max))
-          (insert "#+BEGIN_EXPORT latex\n\\end{multicols*}\n#+END_EXPORT")
-          (org-export-to-file 'latex (format "%s.tex" buffer-name)
-            async subtreep visible-only body-only nil (lambda (file) (org-latex-compile file))))))
+*** dopace-thesis
+#+BEGIN_SRC emacs-lisp
+(add-to-list 'org-latex-classes
+'("thesis"
+"\\documentclass{jarticle}
+[NO-PACKAGES]
+[NO-DEFAULT-PACKAGES]
+\\usepackage[dvipdfmx]{graphicx}"
+("\\section{%s}" . "\\section*{%s}")
+("\\subsection{%s}" . "\\subsection*{%s}")
+("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+("\\paragraph{%s}" . "\\paragraph*{%s}")
+("\\subparagraph{%s}" . "\\subparagraph*{%s}"))
+)
+#+END_SRC
 
-    (org-export-define-derived-backend 'latex-notes 'latex
-      :menu-entry
-      '(?L "Export to LaTeX notes"
-           ((?p "Export to PDF" jethro/org-multicol-to-pdf)))))
-#+end_src
+*** other-class
+参考:https://github.com/tsdye/org-article
+#+BEGIN_SRC elisp
+(add-to-list 'org-export-latex-classes
+'("org-article"
+"\\documentclass{org-article}
+[NO-DEFAULT-PACKAGES]
+[PACKAGES]
+[EXTRA]"
+("\\section{%s}" . "\\section*{%s}")
+("\\subsection{%s}" . "\\subsection*{%s}")
+("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+("\\paragraph{%s}" . "\\paragraph*{%s}")
+("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+#+END_SRC
+
+*** FAQ
+
+参考：https://github.com/jethrokuan/.emacs.d/blob/master/config.org#exporting-pdfs
+
+- 链接颜色重新设置？
+#+BEGIN_EXAMPLE
+\\usepackage{color}
+\\usepackage{hyperref}
+\\hypersetup {colorlinks = true, allcolors = blue}
+#+END_EXAMPLE
+- Title-level最多只有3级的问题？
+如下方法能增加到5级，但是4 5级标题没有数字，待解决
+#+BEGIN_EXAMPLE
+#+OPTIONS: H:5 num:t
+#+END_EXAMPLE
+
+*** Usage
+add to the head of orgfile
+#+BEGIN_EXAMPLE
+#+LATEX_CLASS: dopace-article
+#+END_EXAMPLE
+
+** Highlight pdf source-code
+#+BEGIN_SRC emacs-lisp
+  (use-package ox-latex
+      :after org
+      :ensure nil
+      :config
+      (setq org-latex-listings 'minted)   ;生成的pdf代码语法高亮,要确保pygments已正确安装
+      (add-to-list 'org-latex-packages-alist '("" "minted"))
+      )
+#+END_SRC
 
 ** Org-formula-preview
 According to the [[https://orgmode.org/manual/Previewing-LaTeX-fragments.html#Previewing-LaTeX-fragments][documentation]]
@@ -1543,6 +1587,8 @@ d:         turn on/off inclusion of drawers
   在文件头已经添加了 =#+LATEX_HEADER: \usepackage[UTF8]{ctex}= 没有问题
   后检查文档 [[file:test.org::Meta-Info][Meta-Info]] 说明举例时将Meta元放在BEGIN_QUOTE中，QUOTE中的元是会生效，
   正确的做法是应该将 **实例的代码或者Mete元放在BEGIN_EXAMPLE以防止被动生效导致异常**
+- mac-os 安装精简版导致很多sty找不到
+  =sudo tlmgr install texlive-collection-latexextra=
 
 *** Reference
 *参考资料*
@@ -1741,7 +1787,7 @@ CLOCK: [2019-06-06 Thu 20:42]--[2019-06-06 Thu 20:42] =>  0:00
 )
 #+END_SRC
 
-* Todos [12/13]
+* Todos [12/14]
 DEADLINE: <2019-06-06 Thu> SCHEDULED: <2019-06-06 Thu>
 - [X] SPC-TAB spacemacs/alternate-buffer
 - [X] SPC-f-e-R dotspacemacs/sync-configuration-layers
@@ -1756,5 +1802,7 @@ DEADLINE: <2019-06-06 Thu> SCHEDULED: <2019-06-06 Thu>
 - [ ] 窗口锁屏, 显示启动界面
 - [X] Latex预览
 - [X] org主题和coding主题设置
+- [ ] company-math 
+  https://github.com/vspinu/company-math
   
   
