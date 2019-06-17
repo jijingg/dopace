@@ -2,6 +2,7 @@
 #+DESCRIPTION: Doom Look and Spacemacs Power orgnized by Org and Use-package
 #+AUTHOR: jijing
 #+EMAIL: goco.v@163.com
+#+LATEX_CLASS: dopace-article
 #+STARTUP: indent
 
 * Introduction
@@ -274,7 +275,7 @@ windows add cygwin-zshell
 
 #+END_SRC
 
-#+begin_src
+#+begin_src elisp
 (defun dotspacemacs/sync-configuration-layers (&optional arg)
   "Synchronize declared layers in dotfile with spacemacs.
 
@@ -752,7 +753,7 @@ for org-mode export HTML
 *** specfic mode keymap
 ~(define-key text-mode-map (kbd "'") 'maybe-open-apostrophe)~
 ~M-x describe-mode~ to show all modes in current buffer
-#+begin_src
+#+begin_src elisp
 (local-set-key (kbd "C-c q") (lambda () (interactive) (message "Hi Local Hook")))
 (defun localhooktest ()
   (local-set-key (kbd "C-c q") (lambda () (interactive) (message "Hi Local Hook"))))
@@ -1012,7 +1013,6 @@ I use export to LaTeX through ox-latex, using xelatex for a nicer export templat
 \\usepackage{amsmath,amsthm,amssymb}
 \\usepackage{fontspec}
 \\setmonofont{Consolas}
-\\setsansfont{DejaVu Sans}
 \\usepackage{minted}
 \\usemintedstyle{borland}
 \\newtheorem{definition}{Definition}
@@ -1034,12 +1034,12 @@ I use export to LaTeX through ox-latex, using xelatex for a nicer export templat
 =#+latex_header: \setsansfont{DejaVu Sans}=
 其中 =\setmonofont{Consolas}= 设置等宽字体，一般用在source-code
 其他字体的设置可以直接添加到文件头
-#+BEGIN_SRC 
+#+BEGIN_EXAMPLE
 #+LATEX_HEADER: \setmainfont{Times New Roman}
 #+LATEX_HEADER: \setsansfont{DejaVu Sans}
 #+LATEX_HEADER: \setmonofont{Latin Modern Mono}
 #+LATEX_HEADER: \setsansfont{[foo.ttf]}   
-#+END_SRC
+#+END_EXAMPLE
 
 *** dopace-spec
 #+BEGIN_SRC emacs-lisp
@@ -1201,6 +1201,13 @@ report主要是增加了Part，比Chapter更高一级
 #+BEGIN_EXAMPLE
 #+OPTIONS: H:5 num:t
 #+END_EXAMPLE
+- org-latex-src-block: Wrong type argument: stringp, nil
+有时候 begin_src 后面不跟参数会导致代码块导出时异常Fail
+最好是加个src类型 比如 elisp shell 或者改成begin_example️
+
+**注意**
+begin_src elisp      不会被作为config
+begin_src emacs-lisp 是被作为config
 
 *** Usage
 add to the head of orgfile
@@ -1254,7 +1261,7 @@ M-x customize-variable RET preview-image-type RET
   (executable-find "convert")
   配置都没有问题
   C-x b 打开 **\*Org Preview LaTex Output\*** 
-  #+BEGIN_SRC 
+  #+BEGIN_SRC shell
   ! I can't find file `c:/Users/ADMINI'.
   <to be read again> 
     \protect 
