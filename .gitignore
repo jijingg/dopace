@@ -21,3 +21,4 @@ ltximg
 test.el
 *.swp~
 /snippets/init
+*.html

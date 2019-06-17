@@ -7,6 +7,7 @@
 
 * Introduction
 ** why Emacs
+Learning Once Use Decades 
 ** why Org-config
 *** why not Spacemacs
 ** about author
@@ -171,6 +172,7 @@ windows add cygwin-zshell
     font-size 13
     org-plantuml-jar-path (expand-file-name "d:/Program/emacs-26.2/plantuml.jar")
     default-directory "D:/Program/emacs-26.2/"
+    lib-directory "D:/Program/"
     emacs-d-root "D:/Program/emacs-26.2/.emacs.d/"
     os-shell-root "c:/Users/Administrator/.babun/cygwin/bin/"
     config-base-dir "E:/nutstore/2017pc")
@@ -183,6 +185,7 @@ windows add cygwin-zshell
     font-size 14
     org-plantuml-jar-path (expand-file-name "~/local/lib/plantuml.jar")
     default-directory "~/work"
+    lib-directory "~/work/"
     emacs-d-root "~/.emacs.d/"
     os-shell-root "/bin/"
     config-base-dir "~/nutstore/2017pc")
@@ -195,6 +198,7 @@ windows add cygwin-zshell
     font-size 13
     org-plantuml-jar-path (expand-file-name "~/local/lib/plantuml.jar")
     default-directory "~/work"
+    lib-directory "~/work/"
     emacs-d-root "~/.emacs.d/"
     os-shell-root "/usr/bin/"
     config-base-dir "~/lab/")
@@ -680,6 +684,66 @@ magit-blame-addition
   (magit-define-popup-switch 'magit-log-popup
     ?m "Omit merge commits" "--no-merges")
 )
+#+END_SRC
+
+*** blog-admin
+#+BEGIN_SRC emacs-lisp
+(use-package blog-admin
+:disabled t
+:init
+(progn
+  ;; your config
+  (setq blog-admin-backend-type 'hexo)
+  (setq blog-admin-backend-path (concat config-base-dir "/jijing.site/"))
+  (setq blog-admin-backend-new-post-in-drafts t)
+  (setq blog-admin-backend-new-post-with-same-name-dir t)
+  ))
+#+END_SRC
+
+*** ox-reveal
+一款非常强大漂亮的HTML幻灯片插件
+#+BEGIN_SRC emacs-lisp
+  (use-package ox-reveal
+    :ensure t 
+    :config 
+    (setq org-reveal-root "file:///d:/Program/reveal.js")
+    ;(setq org-reveal-root "https://cdn.jsdelivr.net/npm/reveal.js@3.8.0")
+  )
+#+END_SRC
+
+**** usage 
+初次使用加载方法：
+type “M-x load-library”, then type “ox-reveal”.
+Now you can export this manual into Reveal.js presentation by typing “C-c C-e R R”.
+
+官方示例： https://revealjs.com/#/
+reveal.js可以支持演讲者双屏note模式(浏览器按“s”键唤出)，大屏幻灯片，小屏预览笔记模式
+
+**** config
+#+BEGIN_EXAMPLE
+#+OPTIONS: reveal_single_file:t        ;生成到单个HTML文件
+#+OPTIONS: toc:nil                     ;关闭索引
+#+REVEAL_THEME: league                 ;black|white|league|sky|beige|simple|serif|blood|night|moon|solarized
+#+REVEAL_DEFAULT_FRAG_STYLE: roll-in   ;默认FRAG动画roll-in
+#+REVEAL_TRANS: none                   ;default|cube|page|concave|zoom|linear|fade|none
+#+REVEAL_PLUGINS: (highlight notes)    ;语法高亮，演讲者模式插件
+#+END_EXAMPLE
+
+config per slide
+#+BEGIN_EXAMPLE
+\*** title1 
+    :PROPERTIES:
+    :reveal_background: ./images/whale.jpg
+    :reveal_background_trans: slide
+    :END:
+\*** title2
+    #+REVEAL_DEFAULT_FRAG_STYLE grow|shink|roll-in|fade-out|appear|highlight-red|
+#+END_EXAMPLE
+
+*** htmize
+for org-mode export HTML 
+#+BEGIN_SRC emacs-lisp
+(use-package htmlize)
 #+END_SRC
 
 * KeyBindings
@@ -1668,6 +1732,13 @@ CLOCK: [2019-06-06 Thu 20:42]--[2019-06-06 Thu 20:42] =>  0:00
 (global-set-key (kbd "<f12>") 'org-agenda)
 ;(setq org-latex-pdf-process '("xelatex -interaction nonstopmode %f"
 ;                              "xelatex -interaction nonstopmode %f"))
+#+END_SRC
+
+#+BEGIN_SRC elisp
+(defun z/nikola-deplot () 
+  (interactive)
+  (venv-with-virtualenv "blog" (shell-command "cd ~/nutstore/2017pc/lab/fp/"))
+)
 #+END_SRC
 
 * Todos [11/13]
