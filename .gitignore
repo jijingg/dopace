@@ -22,3 +22,4 @@ test.el
 *.swp~
 /snippets/init
 *.html
+_minted-dopace

@@ -155,6 +155,8 @@ windows add cygwin-zshell
   (let ((explicit-shell-file-name "C:/Users/Administrator/.babun/cygwin/bin/zsh"))
     (call-interactively 'shell))
 )
+;(setq explicit-shell-file-name (executable-find "zsh"))
+;(setq shell-file-name explicit-shell-file-name)
 #+END_SRC
 
 *** MacOS
@@ -345,7 +347,7 @@ Called with `C-u C-u' skips `dotspacemacs/user-config' _and_ preleminary tests."
   :hook (after-init . doom-modeline-mode)
   :config
   (setq doom-modeline-bar-width 4)
-  ;(setq doom-modeline-height 20)
+  (setq doom-modeline-height 20)
 )
 #+END_SRC
 
@@ -746,6 +748,39 @@ for org-mode export HTML
 (use-package htmlize)
 #+END_SRC
 
+*** multi-term
+#+BEGIN_SRC emacs-lisp
+(use-package multi-term
+  :ensure t
+  :config
+  ;(setq multi-term-program  "/bin/zsh")
+  (setq multi-term-program  (executable-find "zsh"))
+  ;(setq multi-term-program  "C:/Users/Administrator/.babun/cygwin/bin/zsh")
+  (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
+  (add-hook 'term-mode-hook (lambda ()
+    (define-key term-raw-map (kbd "C-y") 'term-paste)))
+)
+#+END_SRC
+
+*** expand-region
+#+BEGIN_SRC emacs-lisp
+(use-package expand-region
+  :ensure t
+  :config 
+  (global-set-key (kbd "C-=") 'er/expand-region)
+)
+#+END_SRC
+
+*** TODO evil-escape
+#+BEGIN_SRC emacs-lisp
+(use-package evil-escape
+:ensure t
+:config 
+(setq-default evil-escape-delay 0.2)
+)
+#+END_SRC
+
+*** TODO goto-chg
 * KeyBindings
 ** Inctroductions(Not config)
 *** global key maps
@@ -1044,7 +1079,7 @@ I use export to LaTeX through ox-latex, using xelatex for a nicer export templat
 *** dopace-spec
 #+BEGIN_SRC emacs-lisp
 (add-to-list 'org-latex-classes
-'("dopace-article"
+'("dopace-spec"
 "\\documentclass[a4paper]{article}
 \\usepackage[margin=1in]{geometry}
 \\usepackage{amsmath,amsthm,amssymb}
@@ -1170,8 +1205,11 @@ report主要是增加了Part，比Chapter更高一级
 )
 #+END_SRC
 
-*** other-class
-参考:https://github.com/tsdye/org-article
+*** org-article
+
+[[https://github.com/tsdye/org-article][org-article]] 是一个集中管理设置 article class for Org-mode LaTeX export的包
+[[https://github.com/tsdye/org-article/blob/master/article-class.org][article-class.org]]非常全面的介绍了class的定义使用,非常有参考意义
+
 #+BEGIN_SRC elisp
 (add-to-list 'org-export-latex-classes
 '("org-article"
@@ -1185,6 +1223,17 @@ report主要是增加了Part，比Chapter更高一级
 ("\\paragraph{%s}" . "\\paragraph*{%s}")
 ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
 #+END_SRC
+
+支持多种灵活的配置使用,支持自定义纸张，边距，目录，字体大小，etc...
+
+#+BEGIN_EXAMPLE
+#+OPTIONS:   H:5 num:t toc:t \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:t
+#+LaTeX_CLASS: org-article
+#+LaTeX_CLASS_OPTIONS: [koma,a5paper,DIV=15,landscape,utopia,10pt,listings-sv,microtype,paralist]
+#+END_EXAMPLE
+
+不得不提, org-aticle用到了Koma-script
+[[https://ctan.org/tex-archive/macros/latex/contrib/koma-script/][Koma-script]] 是兼容自带的article, book, report 更新现代的一个包
 
 *** FAQ
 
@@ -1216,7 +1265,7 @@ add to the head of orgfile
 #+END_EXAMPLE
 
 ** Highlight pdf source-code
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacslisp
   (use-package ox-latex
       :after org
       :ensure nil
@@ -1609,6 +1658,7 @@ d:         turn on/off inclusion of drawers
 
 #+BEGIN_SRC emacs-lisp
   (custom-set-faces
+   '(doom-modeline-bar ((t (:background "maroon1"))))
    '(fringe ((t (:inherit nil :background "white"))))
    '(mode-line          ((t (:inherit mode-line :background "#cdd8ee" :foreground "grey20" :weight light))))
    '(mode-line-inactive ((t (:inherit mode-line :background "grey95"  :foreground "grey50" :weight light))))
