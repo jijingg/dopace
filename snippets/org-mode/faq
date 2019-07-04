@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# contributor: JijingGuo
+# name: org-faq
+# key: <faq
+# --
+*Q: ${1:question?}*
+
+  A: $0

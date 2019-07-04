@@ -7,7 +7,7 @@
 
 * Introduction
 ** why Emacs
-Learning Once Use Decades 
+Learning Once Use Decades
 ** why Org-config
 *** why not Spacemacs
 ** about author
@@ -113,7 +113,7 @@ Enable evil-leader First
 (global-auto-revert-mode 1)
 
 ;;设置问答提示为 y-or-n,而不是yes-or-no
-(fset 'yes-or-no-p 'y-or-n-p)   
+(fset 'yes-or-no-p 'y-or-n-p)
 
 (scroll-bar-mode -1)
 
@@ -260,7 +260,7 @@ windows add cygwin-zshell
 
 (defun dopace-utils/reload-dopace-config ()
   (interactive)
-  (load-file 
+  (load-file
   (expand-file-name "init.el" emacs-d-root)))
 
 (evil-leader/set-key
@@ -359,7 +359,7 @@ Called with `C-u C-u' skips `dotspacemacs/user-config' _and_ preleminary tests."
     (which-key-mode +1)
 )
 #+END_SRC
-with ivy 
+with ivy
 *** doom-theme
 #+BEGIN_SRC emacs-lisp
 (use-package doom-themes
@@ -394,7 +394,7 @@ defualt coding theme
 :ensure t
 )
 #+END_SRC
-for ivy history using 
+for ivy history using
 *** evil-leader
 *** eyebrowse
 #+BEGIN_SRC emacs-lisp
@@ -524,7 +524,7 @@ http://joaotavora.github.io/yasnippet/
   ;                         "e:/nutstore/2017pc/emacs/dopace/snippets/"
   ;                         ))
   (yas-global-mode 1) ;;要放在最后，否则要M-x yas-relad-all
-  (evil-leader/set-key 
+  (evil-leader/set-key
     "ii" 'yas-insert-snippet
   )
 )
@@ -545,7 +545,7 @@ http://joaotavora.github.io/yasnippet/
 :ensure t
 :config
 (add-hook 'after-init-hook 'global-company-mode)
-(add-hook 'company-mode-hook 
+(add-hook 'company-mode-hook
   (lambda ()
     (setq company-idle-delay 0)
    ;(define-key evil-insert-state-map (kbd "<tab>") 'company-indent-or-complete-common)
@@ -558,23 +558,23 @@ http://joaotavora.github.io/yasnippet/
 **** Usage
 - <Tab> complete common part
 - <return> select candidate and done
-- M-n select-next 
+- M-n select-next
 - M-p select-previous
 - C-n select nearest candidate before and done
 - C-p select nearest candidate after and done
-=M-x Customize-variable RET company-backends= to see or change the backends list 
+=M-x Customize-variable RET company-backends= to see or change the backends list
 =M-x describe-function RET company-mode= for more information
 
 *** youdao-dictionary
 #+BEGIN_SRC emacs-lisp
 (use-package youdao-dictionary
     :ensure t
-    :config 
+    :config
     (setq url-automatic-caching t)
-    (evil-leader/set-key 
+    (evil-leader/set-key
     "yd"  'youdao-dictionary-search-at-point+
     )
-) 
+)
 #+END_SRC
 
 *** hydras
@@ -599,9 +599,23 @@ This extension facilitates moving images from outside to emacs
 #+BEGIN_SRC emacs-lisp
 (use-package org-download
   :ensure t
-  :disabled t
   :config
   (add-hook 'dired-mode-hook 'org-download-enable)
+  (setq-default org-download-image-dir "./img")
+  (custom-set-variables
+   '(org-download-display-inline-images nil)
+   '(org-download-abbreviate-filename-function (quote file-relative-name))
+   ;'(org-download-backend "wget \"%s\" -O \"%s\"")
+   '(org-download-backend t)
+   '(org-download-screenshot-method "import %s")
+   '(org-download-timestamp "_%Y%m%d%H%M%S")
+   '(org-download-heading-lvl nil)
+   '(org-download-screenshot-method "convert clipboard: %s")
+   '(org-download-image-attr-list
+     '("#+ATTR_ORG: :width 100px"
+       "#+ATTR_LATEX: :width 0.6\\textwidth"
+       "#+ATTR_HTML: :width 80% :align center"))
+  )
 )
 #+END_SRC
 
@@ -673,10 +687,10 @@ https://github.com/emacs-evil/evil-surround
 
 *** magit
 magit-status
-magit-blame-addition 
+magit-blame-addition
 #+BEGIN_SRC emacs-lisp
 (use-package magit
-  :ensure t 
+  :ensure t
   :hook
   (magit-mode . hl-line-mode)
   :custom
@@ -706,14 +720,14 @@ magit-blame-addition
 一款非常强大漂亮的HTML幻灯片插件
 #+BEGIN_SRC emacs-lisp
   (use-package ox-reveal
-    :ensure t 
-    :config 
+    :ensure t
+    :config
     (setq org-reveal-root "file:///d:/Program/reveal.js")
     ;(setq org-reveal-root "https://cdn.jsdelivr.net/npm/reveal.js@3.8.0")
   )
 #+END_SRC
 
-**** usage 
+**** usage
 初次使用加载方法：
 type “M-x load-library”, then type “ox-reveal”.
 Now you can export this manual into Reveal.js presentation by typing “C-c C-e R R”.
@@ -733,7 +747,7 @@ reveal.js可以支持演讲者双屏note模式(浏览器按“s”键唤出)，�
 
 config per slide
 #+BEGIN_EXAMPLE
-\*** title1 
+\*** title1
     :PROPERTIES:
     :reveal_background: ./images/whale.jpg
     :reveal_background_trans: slide
@@ -743,7 +757,7 @@ config per slide
 #+END_EXAMPLE
 
 *** htmize
-for org-mode export HTML 
+for org-mode export HTML
 #+BEGIN_SRC emacs-lisp
 (use-package htmlize)
 #+END_SRC
@@ -766,7 +780,7 @@ for org-mode export HTML
 #+BEGIN_SRC emacs-lisp
 (use-package expand-region
   :ensure t
-  :config 
+  :config
   (global-set-key (kbd "C-=") 'er/expand-region)
 )
 #+END_SRC
@@ -775,7 +789,7 @@ for org-mode export HTML
 #+BEGIN_SRC emacs-lisp
 (use-package evil-escape
 :ensure t
-:config 
+:config
 (setq-default evil-escape-delay 0.2)
 )
 #+END_SRC
@@ -830,7 +844,7 @@ for org-mode export HTML
 
 #+BEGIN_SRC emacs-lisp
 (defhydra hydra-window (:idle 1.0 ;delay 1.0s
-                        :exit t 
+                        :exit t
                         :hint nil)
   "
   窗口跳转      ^^                    ^^                窗口移动
@@ -838,10 +852,10 @@ for org-mode export HTML
     _k_^^     _/_ new-right-window   _s_ split-right         _K_^^
   _h_   _l_   _-_ new-down-window    _v_ split-bottom      _H_   _L_
     _j_^^     _d_ delete-window      _=_ balance-windows     _J_^^
-    
+
   "
   ("=" balance-windows )
-  ("l" evil-window-right ) 
+  ("l" evil-window-right )
   ("h" evil-window-left )
   ("k" evil-window-up )
   ("j" evil-window-down )
@@ -980,63 +994,130 @@ xelatex比较新,对UTF的支持更傻瓜，但是对有些旧的宏可能不支
 
 I use export to LaTeX through ox-latex, using xelatex for a nicer export template.
 #+BEGIN_SRC emacs-lisp
-(use-package org
-  :mode ("\\.org\\'" . org-mode)
-  :bind
-  (("C-c l" . org-store-link)
-  ("C-c a" . org-agenda)
-  ("C-c b" . org-iswitchb)
-  ("C-c c" . org-capture))
-  :bind
-  (:map org-mode-map
-  ("M-n" . outline-next-visible-heading)
-  ("M-p" . outline-previous-visible-heading))
-  :custom
-  (org-src-window-setup 'current-window)
-  (org-return-follows-link t)
-  (org-babel-load-languages
-  '((emacs-lisp . t)
-      (python . t)))
-  (org-use-speed-commands t)
-  (org-catch-invisible-edits 'show)
-  :custom-face
-  (org-default ((t (:inherit default :background "snow"))))  
-  (variable-pitch ((t (:family "iA Writer Duospace" :height 0.9))))
-  (org-document-title ((t (:foreground "black" :slant italic :weight bold :height 1.3))))
-  (org-meta-line ((t (:inherit font-lock-comment-face :foreground "chocolate3" :slant italic :height 0.94))))
-  (org-date ((t (:foreground "chocolate3" :underline t :slant italic :height 0.94)))) ;DATA
-  (org-document-info-keyword ((t (:inherit shadow :foreground "snow4" :slant italic :height 0.94))))
-  (org-document-info ((t (:foreground "midnight blue" :slant italic))))
-  (org-level-1 ((t (:foreground "blue"))))
-  (org-level-2 ((t (:foreground "SaddleBrown"))))
-  (org-level-3 ((t (:foreground "purple"))))
-  (org-block-begin-line ((t (:foreground "#999" :background "linen" :slant italic :underline t)))) ;fff4ea
-  (org-block-end-line ((t (:foreground "#999" :background "linen" :slant italic :underline t))))   ;fff4ea
-  (org-block ((t (:background "ivory")))) ;fffef5 fffffa
-  (org-quote ((t (:background "ivory"))))
-  (org-checkbox ((t (:inherit org-todo :foreground "black" :weight bold))))
-  (org-checkbox-statistics-done ((t (:foreground "green4"))))
-  (org-checkbox-statistics-todo ((t (:inherit org-todo :foreground "firebrick1" :weight bold))))
-  (org-special-keyword ((t (:foreground "chocolate3" :slant italic :height 0.94)))) ;DEDLINE SCHEDUE
-  (org-image-actual-width (/ (display-pixel-width) 2))
-  :config
-  (setq system-time-locale "C")       ;set date english format
-  (setq org-startup-indented t)
-  (setq org-latex-default-class "dopace-article")
-  (setq org-latex-compiler "xelatex")
-  (require 'org-habit)
-  (when (version<= "9.2" (org-version))
-  (require 'org-tempo))
+  (use-package org
+    :mode ("\\.org\\'" . org-mode)
+    :bind
+    (("C-c l" . org-store-link)
+    ("C-c a" . org-agenda)
+    ("C-c b" . org-iswitchb)
+    ("C-c c" . org-capture))
+    :bind
+    (:map org-mode-map
+    ("M-n" . outline-next-visible-heading)
+    ("M-p" . outline-previous-visible-heading))
 
-  (setq org-latex-pdf-process 
-        '("xelatex -shell-escape -interaction nonstopmode %f"
-          "xelatex -shell-escape -interaction nonstopmode %f"))
-  (setq org-latex-default-packages-alist
-  (remove '("AUTO" "inputenc" t) org-latex-default-packages-alist))
+    :custom
+    (org-src-window-setup 'current-window)
+    (org-return-follows-link t)
+    (org-babel-load-languages
+    '((emacs-lisp . t)
+        (python . t)))
+    (org-use-speed-commands t)
+    (org-catch-invisible-edits 'show)
+
+    :custom-face
+    (org-default ((t (:inherit default :background "snow"))))
+    (variable-pitch ((t (:family "iA Writer Duospace" :height 0.9))))
+    (org-document-title ((t (:foreground "black" :slant italic :weight bold :height 1.3))))
+    (org-meta-line ((t (:inherit font-lock-comment-face :foreground "chocolate3" :slant italic :height 0.94))))
+    (org-date ((t (:foreground "chocolate3" :underline t :slant italic :height 0.94)))) ;DATA
+    (org-document-info-keyword ((t (:inherit shadow :foreground "snow4" :slant italic :height 0.94))))
+    (org-document-info ((t (:foreground "midnight blue" :slant italic))))
+    (org-level-1 ((t (:foreground "blue"))))
+    (org-level-2 ((t (:foreground "SaddleBrown"))))
+    (org-level-3 ((t (:foreground "purple"))))
+    (org-block-begin-line ((t (:foreground "#999" :background "linen" :slant italic :underline t)))) ;fff4ea
+    (org-block-end-line ((t (:foreground "#999" :background "linen" :slant italic :underline t))))   ;fff4ea
+    (org-block ((t (:background "ivory")))) ;fffef5 fffffa
+    (org-quote ((t (:background "ivory"))))
+    (org-checkbox ((t (:inherit org-todo :foreground "black" :weight bold))))
+    (org-checkbox-statistics-done ((t (:foreground "green4"))))
+    (org-checkbox-statistics-todo ((t (:inherit org-todo :foreground "firebrick1" :weight bold))))
+    (org-special-keyword ((t (:foreground "chocolate3" :slant italic :height 0.94)))) ;DEDLINE SCHEDUE
+    (org-image-actual-width (/ (display-pixel-width) 2))
+
+    :config
+    (setq system-time-locale "C")       ;set date english format
+    (setq org-startup-indented t)
+    (setq org-latex-default-class "dopace-article")
+    (setq org-latex-compiler "xelatex")
+
+    (require 'org-habit)
+    (when (version<= "9.2" (org-version))
+    (require 'org-tempo))
+
+    ;; (setq org-latex-listings 'minted)   ;生成的pdf代码语法高亮,要确保pygments已正确安装
+    ;; (add-to-list 'org-latex-packages-alist '("" "minted"))
+
+    (setq org-latex-pdf-process
+          '("xelatex -shell-escape -interaction nonstopmode %f"
+            "xelatex -shell-escape -interaction nonstopmode %f"))
+
+    (setq org-latex-default-packages-alist
+      (remove '("AUTO" "inputenc" t) org-latex-default-packages-alist))
+
+    )
+#+END_SRC
+
+** screen-shot
+#+BEGIN_SRC emacs-lisp
+(defun my-org-screenshot ()
+  "Take a screenshot into a time stamped unique-named file in the
+same directory as the org-buffer and insert a link to this file."
+  (interactive)
+  (setq filename
+        (concat
+         (make-temp-name
+          (concat (buffer-file-name)
+                  "_"
+                  (format-time-string "%Y%m%d_%H%M%S_")) ) ".png"))
+  (call-process "import" nil nil nil filename)
+  (insert (concat "[[" filename "]]"))
   )
 #+END_SRC
 
-** Org-GTD     
+#+BEGIN_SRC emacs-lisp
+;(defvar ip-script-path "c:/msys64/home/chenyu/.emacs.d/private/imagepaste/bin/imagepaste.py")
+;(defvar default-image-file "d:/images/untitled.png")
+(defvar ip-script-path "~/.emacs.d/bin/imagepaste.py")
+(defvar default-image-file "~/.emacs.d/untitled.png")
+
+(defun replace-home-prefix (path)
+  (replace-regexp-in-string
+   (replace-regexp-in-string "\\\\" "/" (getenv "HOME"))
+   "~" path))
+
+(defun mkdir-get-buffer-pic-name ()
+  (interactive)
+  (let* ((bf-name (or (buffer-file-name (current-buffer))  default-image-file))
+         (file-dir (file-name-sans-extension bf-name))
+         (fn-base (file-name-base bf-name))
+         (idx 0)
+         (new-file-name "")
+         (if-loop 1))
+    (unless (file-exists-p file-dir)
+      (mkdir file-dir)
+      (setq idx (length (directory-files file-dir))))
+    (while (> if-loop 0)
+      (setq new-file-name (format "%s/%s%d.jpg" file-dir fn-base idx))
+      (if (file-exists-p new-file-name)
+          (setq idx (1+ idx))
+        (setq if-loop 0)))
+    new-file-name))
+
+(defun image-paste ()
+  (interactive)
+  (let* ((file-name (mkdir-get-buffer-pic-name))
+         (buf-str (format "[[%s]]" (replace-home-prefix file-name)))
+         (ret (call-process "python3" nil "*ImagePaste*" nil ip-script-path file-name)))
+    (if (= ret 0)
+        (progn
+          (message "success")
+          (insert buf-str))
+      (message (format "imagepaste failed, check clipboard is image data. return: %d" ret)))))
+#+END_SRC
+
+** Org-GTD
 ** Org-Blog
 ** Org-export
 *** dopace-article
@@ -1060,11 +1141,11 @@ I use export to LaTeX through ox-latex, using xelatex for a nicer export templat
 ("\\section{%s}" . "\\section*{%s}")
 ("\\subsection{%s}" . "\\subsection*{%s}")
 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-("\\paragraph{%s}" . "\\paragraph*{%s}")
-("\\subparagraph{%s}" . "\\subparagraph*{%s}"))
+("\\paragraph{%s}\\mbox{}\\" . "\\paragraph*{%s}")
+("\\subparagraph{%s}\\mbox{}\\" . "\\subparagraph*{%s}"))
 )
+;\\usepackage{fancyhdr}
 #+END_SRC
-
 =#+latex_header: \setmainfont{微软雅黑}=
 =#+latex_header: \setsansfont{DejaVu Sans}=
 其中 =\setmonofont{Consolas}= 设置等宽字体，一般用在source-code
@@ -1073,7 +1154,7 @@ I use export to LaTeX through ox-latex, using xelatex for a nicer export templat
 #+LATEX_HEADER: \setmainfont{Times New Roman}
 #+LATEX_HEADER: \setsansfont{DejaVu Sans}
 #+LATEX_HEADER: \setmonofont{Latin Modern Mono}
-#+LATEX_HEADER: \setsansfont{[foo.ttf]}   
+#+LATEX_HEADER: \setsansfont{[foo.ttf]}
 #+END_EXAMPLE
 
 *** dopace-spec
@@ -1092,6 +1173,8 @@ I use export to LaTeX through ox-latex, using xelatex for a nicer export templat
 \\usepackage{color}
 \\usepackage{hyperref}
 \\hypersetup {colorlinks = true, allcolors = blue}
+\\usepackage{tikz}
+\\usepackage{eso-pic}
 \\usepackage[UTF8]{ctex}"
 ("\\section{%s}" . "\\section*{%s}")
 ("\\subsection{%s}" . "\\subsection*{%s}")
@@ -1134,7 +1217,7 @@ I use export to LaTeX through ox-latex, using xelatex for a nicer export templat
 )
 #+END_SRC
 
-其中添加 =[NO-DEFAULT-PACKAGES]= =[NO-PACKAGES]= 会完整覆盖原book的packages， 
+其中添加 =[NO-DEFAULT-PACKAGES]= =[NO-PACKAGES]= 会完整覆盖原book的packages，
 否则就是追加
 #+BEGIN_SRC emacs-lisp
 (add-to-list 'org-latex-classes
@@ -1169,7 +1252,7 @@ I use export to LaTeX through ox-latex, using xelatex for a nicer export templat
 #+END_SRC
 colorlinks 会链接的颜色
 
-*** dopace-report 
+*** dopace-report
 report主要是增加了Part，比Chapter更高一级
 #+BEGIN_SRC emacs-lisp
 (add-to-list 'org-latex-classes
@@ -1264,11 +1347,27 @@ add to the head of orgfile
 #+LATEX_CLASS: dopace-article
 #+END_EXAMPLE
 
+*** fancyhdr
+
+fancyhdr是latex专门用来处理页眉页脚的包，具体的使用方法参见[[https://mirror-hk.koddos.net/CTAN/macros/latex/contrib/fancyhdr/fancyhdr.pdf][Fancyhdr.pdf]]
+
+#+BEGIN_EXAMPLE
+#+LATEX_HEADER: \usepackage{fancyhdr}
+#+LATEX_HEADER: \pagestyle{fancyplain}
+#+END_EXAMPLE
+
 ** Highlight pdf source-code
-#+BEGIN_SRC emacslisp
+#+BEGIN_SRC elisp
   (use-package ox-latex
       :after org
       :ensure nil
+      :custom
+      ;; (setq org-latex-pdf-process
+      ;;   '("xelatex -shell-escape -interaction nonstopmode %f"
+      ;;     "xelatex -shell-escape -interaction nonstopmode %f"))
+      (setq org-latex-pdf-process
+        '("latexmk -shell-escape -bibtex -f -pdf %f"
+          "latexmk -shell-escape -bibtex -f -pdf %f"))
       :config
       (setq org-latex-listings 'minted)   ;生成的pdf代码语法高亮,要确保pygments已正确安装
       (add-to-list 'org-latex-packages-alist '("" "minted"))
@@ -1278,16 +1377,17 @@ add to the head of orgfile
 ** Org-formula-preview
 According to the [[https://orgmode.org/manual/Previewing-LaTeX-fragments.html#Previewing-LaTeX-fragments][documentation]]
 or =(info "(org) Previewing LaTeX fragments")=
-A quick ~C-h org-format-latex-options RET~ to show export format Infor 
+A quick ~C-h org-format-latex-options RET~ to show export format Infor
 #+begin_src emacs-lisp
 (setq org-latex-compiler "xelatex")
-(if (string-equal system-type "darwin")      
+(if (string-equal system-type "darwin")
   (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.3))
   )
+
 (setq org-latex-create-formula-image-program 'dvipng)
 
 (if (memq system-type '(windows-nt cygwin ms-dos))
-  (setq 
+  (setq
     temporary-file-directory "e:/.emacs_temp" ;;解决latex 不能识别 C:/ADMIN~1/路径的问题
     org-format-latex-options (plist-put org-format-latex-options :scale 1.6))
 )
@@ -1309,17 +1409,17 @@ M-x customize-variable RET preview-image-type RET
   (executable-find "dvisvgm")
   (executable-find "convert")
   配置都没有问题
-  C-x b 打开 **\*Org Preview LaTex Output\*** 
+  C-x b 打开 **\*Org Preview LaTex Output\***
   #+BEGIN_SRC shell
   ! I can't find file `c:/Users/ADMINI'.
-  <to be read again> 
-    \protect 
+  <to be read again>
+    \protect
   <*> c:/Users/ADMINI~
     1/AppData/Local/Temp/orgtexGzYR6k.tex
   #+END_SRC
   发现路径在ADMINI~1处break了，怀疑是latex不能正确识别路径中包含"~"字符
   在cmd或shell命令行中执行
-  latex c:/Users/ADMINI~1/AppData/Local/Temp/orgtex26eeuz.dvi 
+  latex c:/Users/ADMINI~1/AppData/Local/Temp/orgtex26eeuz.dvi
   果然失败
   解决方法：
   将临时路径重置，比如(setq temporary-file-directory "e:/.emacs_temp")
@@ -1437,6 +1537,46 @@ Automatic latex image toggling when cursor is on a fragment
 
 #+end_src
 
+** Utils
+remove-link keep name
+#+BEGIN_SRC emacs-lisp
+(defun dopace/org-replace-link-by-link-description ()
+    "Replace an org link by its description or if empty its address"
+  (interactive)
+  (if (org-in-regexp org-bracket-link-regexp 1)
+      (let ((remove (list (match-beginning 0) (match-end 0)))
+        (description (if (match-end 3)
+                 (org-match-string-no-properties 3)
+                 (org-match-string-no-properties 1))))
+    (apply 'delete-region remove)
+    (insert description))))
+#+END_SRC
+
+#+BEGIN_SRC elisp
+(defun org/parse-headings (backend)
+  (if (member backend '(xelatex))
+      (org-map-entries
+       (lambda ()
+         (progn
+           (insert-string "#+LATEX: \\newpage")
+           ;;(insert-string "#+LATEX: \\pagebreak")
+           ))
+       "+newpage")
+    )
+)
+
+(add-hook 'org-export-before-parsing-hook 'org/parse-headings)
+#+END_SRC
+
+ditta
+#+BEGIN_SRC emacs-lisp
+(org-babel-do-load-languages
+  'org-babel-load-languages
+  '((ditaa . t)
+    (plantuml . t)
+  ))
+#+END_SRC
+
 ** Tutorial
 
 Org-mode的一些使用方法和配置收集整理，仅当参考手册，并无生效的配置
@@ -1451,11 +1591,11 @@ file:~/.alias
 docview:dopace.pdf::12
 mailto:goco.v@163.com
 mhe:folder#id
-rmail:folder#id              
+rmail:folder#id
 bbdb:R.*Stallman
-irc:/irc.com/#emacs/bob     
+irc:/irc.com/#emacs/bob
 irc://irc.freenode.net/scala
-info:org:External%20links  
+info:org:External%20links
 其中docview pdf需要保证Ghostscript和xpdf正确安装✔
 
 对于文件链接，可以用::增加定位符的方式链接到指定位置，也可以是行号或者搜索选项
@@ -1481,7 +1621,7 @@ file:./dopace.org::#my-custom-id
 定义脚注 [fn:footprint1]
 #+END_EXAMPLE
 
-*** list 
+*** list
 Org 能够识别有序列表、无序列表和描述列表。
 1. 无序列表项以‘-’、‘+’或者‘*‘开头。
 2. 有序列表项以‘1.’或者‘1)’开头。
@@ -1492,6 +1632,15 @@ Org 能够识别有序列表、无序列表和描述列表。
      2) 3级列表
    - 子列表M-Enter增加同级列表
 有序列表和无序列表都以缩进表示层级。只要对齐缩进，不管是换行还是分块都认为是处于当前列表项。
+
+*** footnotes
+=c-c c-x f= Call footnote action command.
+
+s	Sort the footnote definitions by reference sequence.
+r	Renumber the simple ‘fn:N’ footnotes.
+S	Short for first r, then s action.
+n	Rename all footnotes into a ‘fn:1’ … ‘fn:n’ sequence.
+d	Delete the footnote at point, including definition and references.
 
 *** Meta-Info
 主要的Meta元, 一般建议放在文件头
@@ -1593,42 +1742,7 @@ d:         turn on/off inclusion of drawers
 在文件头添加
 
 *** pdf(latex)-export template
-#+BEGIN_SRC elisp
-(require 'ox-latex)
-(unless (boundp 'org-latex-classes)
-  (setq org-latex-classes nil))
-(add-to-list 'org-latex-classes
-             '("article"
-               "\\documentclass{article}"
-               ("\\section{%s}" . "\\section*{%s}")))
-#+END_SRC
-
-=#+LaTeX_CLASS: article0=
-#+BEGIN_SRC elisp
-(add-to-list 'org-latex-classes
-             '("article0"
-               "\\documentclass{article}"
-               ("\\section{%s}" . "\\section*{%s}")
-               ("\\subsection{%s}" . "\\subsection*{%s}")
-               ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-               ("\\paragraph{%s}" . "\\paragraph*{%s}")
-               ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
-#+END_SRC
-
-=#+LaTeX_CLASS: book0=
-#+BEGIN_SRC elisp
-(add-to-list 'org-latex-classes
-             '("book0"
-               "\\documentclass{book}"
-               ("\\part{%s}" . "\\part*{%s}")
-               ("\\chapter{%s}" . "\\chapter*{%s}")
-               ("\\section{%s}" . "\\section*{%s}")
-               ("\\subsection{%s}" . "\\subsection*{%s}")
-               ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))
-             )
-#+END_SRC
-
-当然可以设置更多的格式，只需要在文件头通过 =#LaTex_CLASS: XXX= 来导入
+只需要在文件头通过 =#LaTex_CLASS: XXX= 来导入
 
 *** FQA
 - Please adjust ‘dvipng’ part of ‘org-preview-latex-process-alist
@@ -1645,6 +1759,19 @@ d:         turn on/off inclusion of drawers
   正确的做法是应该将 **实例的代码或者Mete元放在BEGIN_EXAMPLE以防止被动生效导致异常**
 - mac-os 安装精简版导致很多sty找不到
   =sudo tlmgr install texlive-collection-latexextra=
+- 如何在org插入Latex, 如何在文章正文开始才插入页眉页脚
+  可以尝试在正文开始之前插入以下代码，而不是放在 =#+LATEX_HEADER:= 中
+  #+BEGIN_EXAMPLE
+#+BEGIN_EXPORT latex
+\pagebreak
+\pagestyle{fancyplain}
+\chead{U3-GNS原理与实现}
+\lhead{\today}
+\fontsize{10}{12}
+\rfoot{\small \textsl{Fishi-Semi.Inc 2019}}
+\lfoot{}
+#+END_EXPORT
+  #+END_EXAMPLE
 
 *** Reference
 *参考资料*
@@ -1669,7 +1796,7 @@ d:         turn on/off inclusion of drawers
   )
 
   ;; (add-hook 'org-mode-hook (lambda ()
-  ;;   (custom-set-faces 
+  ;;   (custom-set-faces
   ;;     '(font-lock-comment-face ((t (:foreground "green4"))))
   ;;   ))
   ;; )
@@ -1816,7 +1943,7 @@ d:         turn on/off inclusion of drawers
  '(widget-documentation ((t (:foreground "lime green"))))
  '(widget-field ((t (:background "dim gray"))))
  '(widget-inactive ((t (:foreground "grey70"))))
- '(widget-single-line-field ((t (:background "dim gray")))) )                       
+ '(widget-single-line-field ((t (:background "dim gray")))) )
 #+END_SRC
 
 * Test
@@ -1838,7 +1965,7 @@ CLOCK: [2019-06-06 Thu 20:42]--[2019-06-06 Thu 20:42] =>  0:00
 #+END_SRC
 
 #+BEGIN_SRC elisp
-(defun z/nikola-deplot () 
+(defun z/nikola-deplot ()
   (interactive)
   (venv-with-virtualenv "blog" (shell-command "cd ~/nutstore/2017pc/lab/fp/"))
 )
@@ -1849,7 +1976,7 @@ DEADLINE: <2019-06-06 Thu> SCHEDULED: <2019-06-06 Thu>
 - [X] SPC-TAB spacemacs/alternate-buffer
 - [X] SPC-f-e-R dotspacemacs/sync-configuration-layers
 - [X] org bable source defualt-hidden
-- [X] org-indent-mode add org-mode-hooks 
+- [X] org-indent-mode add org-mode-hooks
 - [X] youdao-dictionary
 - [X] magit
 - [X] hydra
@@ -1859,7 +1986,5 @@ DEADLINE: <2019-06-06 Thu> SCHEDULED: <2019-06-06 Thu>
 - [ ] 窗口锁屏, 显示启动界面
 - [X] Latex预览
 - [X] org主题和coding主题设置
-- [ ] company-math 
+- [ ] company-math
   https://github.com/vspinu/company-math
-  
-  

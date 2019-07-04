@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# contributor: JijingGuo
+# name: begin_align
+# key: <align
+# --
+#+begin_align
+  $0
+#+edn_align
